@@ -1,0 +1,58 @@
+<!doctype html>
+<meta charset="utf-8">
+<title>scenepick</title>
+<link rel="stylesheet" href="/static/style.css">
+<script>document.documentElement.dataset.theme = localStorage.theme || "dark";</script>
+
+<header>
+  <span id="counts"></span>
+  <label><input type="checkbox" id="only"> unjudged only</label>
+  {% include "controls.html" %}
+</header>
+<div id="grid"></div>
+
+<script src="/static/app.js"></script>
+<script>
+const grid = document.getElementById("grid");
+const counts = document.getElementById("counts");
+const only = document.getElementById("only");
+const n = { unjudged: 0, keep: 0, reject: 0 };
+let total = 0;
+
+mountHeader(null);
+
+function show() {
+  counts.textContent =
+    `${total} shots   keep ${n.keep}   reject ${n.reject}   unjudged ${n.unjudged}`;
+}
+
+grid.onclick = async (e) => {
+  const button = e.target.closest("button[data-set]");
+  if (!button) return;
+  const cell = button.closest(".cell");
+  const want = cell.dataset.status === button.dataset.set ? "unjudged" : button.dataset.set;
+  const got = await setStatus(cell.dataset.id, want);
+  n[cell.dataset.status]--;
+  n[got]++;
+  cell.dataset.status = got;
+  show();
+};
+
+// Filtering only on toggle, never on judgment: a cell that vanished the instant
+// you clicked it could not be un-clicked.
+only.onchange = () => {
+  for (const cell of grid.children) {
+    cell.hidden = only.checked && cell.dataset.status !== "unjudged";
+  }
+};
+
+fetch("/api/images").then(r => r.json()).then(images => {
+  total = images.length;
+  for (const i of images) n[i.status]++;
+  grid.innerHTML = images.map(i => `<div class="cell" data-id="${i.image_id}" data-status="${i.status}">
+    <a href="/shot/${i.image_id}"><img loading="lazy" src="/thumb/${i.image_id}" alt=""></a>
+    <div class="row"><button data-set="keep">keep</button><button data-set="reject">reject</button></div>
+  </div>`).join("");
+  show();
+});
+</script>

@@ -1,0 +1,50 @@
+<!doctype html>
+<meta charset="utf-8">
+<title>{{ image_id }}</title>
+<link rel="stylesheet" href="/static/style.css">
+<script>document.documentElement.dataset.theme = localStorage.theme || "dark";</script>
+{% if next %}<link rel="prefetch" href="/rgb/{{ next }}">{% endif %}
+
+<header id="bar" data-status="{{ status }}">
+  <a href="/">&larr; all</a>
+  {% if prev %}<a class="step" href="/shot/{{ prev }}">&larr;</a>{% else %}<span class="step dim">&larr;</span>{% endif %}
+  {% if next %}<a class="step" href="/shot/{{ next }}">&rarr;</a>{% else %}<span class="step dim">&rarr;</span>{% endif %}
+  <span>{{ image_id }}</span>
+  <span class="dim">{{ position }}</span>
+  <button data-set="keep">keep</button>
+  <button data-set="reject">reject</button>
+  {% include "controls.html" %}
+</header>
+<div id="view"><img id="img" src="/rgb/{{ image_id }}" alt=""></div>
+
+<script src="/static/app.js"></script>
+<script>
+const image_id = "{{ image_id }}";
+const prev = "{{ prev or '' }}";
+const next = "{{ next or '' }}";
+const bar = document.getElementById("bar");
+const img = document.getElementById("img");
+
+mountHeader(image_id);
+
+img.onclick = () => img.classList.toggle("fit");
+
+bar.onclick = async (e) => {
+  const button = e.target.closest("button[data-set]");
+  if (!button) return;
+  const want = bar.dataset.status === button.dataset.set ? "unjudged" : button.dataset.set;
+  bar.dataset.status = await setStatus(image_id, want);
+};
+
+// Physical keys, not e.key: with an IME active e.key is "Process" and nothing matches.
+// A key judges and moves on; a button does not. A misjudgment is corrected by stepping back.
+addEventListener("keydown", async (e) => {
+  if (e.isComposing) return;
+  if (e.code === "ArrowLeft" && prev) return void (location.href = `/shot/${prev}`);
+  if (e.code === "ArrowRight" && next) return void (location.href = `/shot/${next}`);
+  const set = { Digit1: "keep", Numpad1: "keep", Digit0: "reject", Numpad0: "reject" }[e.code];
+  if (!set) return;
+  await setStatus(image_id, set);
+  location.href = next ? `/shot/${next}` : "/";
+});
+</script>

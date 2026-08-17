@@ -1,0 +1,160 @@
+:root {
+  --bg: #1b1b1b;
+  --panel: #111;
+  --line: #333;
+  --text: #ddd;
+  --dim: #777;
+  --frame: #444;
+  --btn: #2c2c2c;
+  --btn-line: #555;
+  --hover: #222;
+  --here: #2a3340;
+  --void: #000;
+  --link: #8bf;
+  --keep: #4c9;
+  --reject: #d55;
+  --on-accent: #000;
+}
+
+/* Not white. A full-brightness page beside a dark photo makes exposure unjudgeable. */
+[data-theme="light"] {
+  --bg: #e9e7e2;
+  --panel: #dedbd4;
+  --line: #c3bfb6;
+  --text: #23211e;
+  --dim: #6d6862;
+  --frame: #bdb8ae;
+  --btn: #d3cfc7;
+  --btn-line: #b0aaa0;
+  --hover: #d8d4cc;
+  --here: #cdd6e0;
+  --void: #cfcbc3;
+  --link: #2a5db0;
+  --keep: #1c7a52;
+  --reject: #b03434;
+  --on-accent: #fff;
+}
+
+* { box-sizing: border-box; }
+
+body {
+  margin: 0;
+  font: 14px system-ui, sans-serif;
+  background: var(--bg);
+  color: var(--text);
+}
+
+header {
+  position: sticky;
+  top: 0;
+  z-index: 10;
+  display: flex;
+  gap: 16px;
+  align-items: center;
+  padding: 10px 16px;
+  background: var(--panel);
+  border-bottom: 1px solid var(--line);
+}
+
+header a { color: var(--link); }
+header label { cursor: pointer; }
+.dim { color: var(--dim); }
+.step { padding: 0 4px; font-size: 17px; text-decoration: none; }
+
+button {
+  font: inherit;
+  padding: 3px 12px;
+  color: var(--text);
+  background: var(--btn);
+  border: 1px solid var(--btn-line);
+  border-radius: 3px;
+  cursor: pointer;
+}
+
+#theme { margin-left: auto; }
+
+#menu {
+  position: fixed;
+  top: 45px;
+  right: 0;
+  bottom: 0;
+  z-index: 20;
+  display: flex;
+  width: 340px;
+  background: var(--panel);
+  border-left: 1px solid var(--line);
+}
+
+/* An author display rule beats the [hidden] attribute, so hidden needs saying twice. */
+#menu[hidden] { display: none; }
+
+#menu-list {
+  flex: 1;
+  overflow-y: auto;
+  margin: 0;
+  padding: 8px 0;
+  list-style: none;
+}
+
+#menu-list li {
+  content-visibility: auto;
+  contain-intrinsic-size: auto 22px;
+}
+
+#menu-list a {
+  display: block;
+  padding: 2px 10px;
+  font-family: ui-monospace, monospace;
+  text-decoration: none;
+}
+
+#menu-list a span { float: right; color: var(--dim); }
+#menu-list a:hover { background: var(--hover); }
+#menu-list a.here { background: var(--here); }
+#menu-list a[data-status="unjudged"] { color: var(--text); }
+#menu-list a[data-status="keep"] { color: var(--keep); }
+#menu-list a[data-status="reject"] { color: var(--reject); }
+
+#grid {
+  display: grid;
+  grid-template-columns: repeat(auto-fill, minmax(240px, 1fr));
+  gap: 10px;
+  padding: 12px;
+}
+
+.cell {
+  padding: 4px;
+  border: 2px solid var(--frame);
+  border-radius: 3px;
+  content-visibility: auto;
+  contain-intrinsic-size: 240px 220px;
+}
+
+.cell img {
+  display: block;
+  width: 100%;
+  background: var(--void);
+}
+
+.cell .row {
+  display: flex;
+  gap: 6px;
+  margin-top: 4px;
+}
+
+.cell .row button { flex: 1; }
+
+[data-status="keep"] { border-color: var(--keep); }
+[data-status="keep"] button[data-set="keep"] { background: var(--keep); color: var(--on-accent); }
+[data-status="reject"] { border-color: var(--reject); }
+[data-status="reject"] button[data-set="reject"] { background: var(--reject); color: var(--on-accent); }
+[data-status="reject"] img { opacity: 0.35; }
+
+#view {
+  overflow: auto;
+  height: calc(100vh - 45px);
+  background: var(--void);
+}
+
+#view img { display: block; }
+#view img.fit { max-width: 100%; max-height: calc(100vh - 45px); margin: auto; }
