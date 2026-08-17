@@ -36,15 +36,8 @@ bar.onclick = async (e) => {
   bar.dataset.status = await setStatus(image_id, want);
 };
 
-// Physical keys, not e.key: with an IME active e.key is "Process" and nothing matches.
-// A key judges and moves on; a button does not. A misjudgment is corrected by stepping back.
-addEventListener("keydown", async (e) => {
-  if (e.isComposing) return;
-  if (e.code === "ArrowLeft" && prev) return void (location.href = `/shot/${prev}`);
-  if (e.code === "ArrowRight" && next) return void (location.href = `/shot/${next}`);
-  const set = { Digit1: "keep", Numpad1: "keep", Digit0: "reject", Numpad0: "reject" }[e.code];
-  if (!set) return;
-  await setStatus(image_id, set);
-  location.href = next ? `/shot/${next}` : "/";
+addEventListener("keydown", (e) => {
+  if (e.code === "ArrowLeft" && prev) location.href = `/shot/${prev}`;
+  if (e.code === "ArrowRight" && next) location.href = `/shot/${next}`;
 });
 </script>

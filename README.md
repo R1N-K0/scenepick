@@ -1,11 +1,3 @@
-# scenepick
-
-撮影した写真を 1 枚ずつ見て、データセットに入れるか捨てるかを決めるためのローカル Web アプリ。
-ピンボケ、白飛び、被写体の切れといった失敗を弾くために使う。
-
-判定結果は `{image_id: status}` だけの JSON に書く。image_id は RGB のファイル名から拡張子を
-取ったもの。それ以外は何も持たない。
-
 ## 準備
 
 ```
@@ -27,7 +19,7 @@ DATA_ROOT=D:/hs2026
 python tools/make_dummy.py
 ```
 
-## 使う
+## 使い方
 
 ```
 python tools/make_thumbs.py   # サムネイルを先に作る
@@ -40,22 +32,15 @@ python app.py                 # http://localhost:5000
 サムネイルをクリックすると詳細画面。等倍で表示されるのでピントを確認できる。画像をクリック
 すると画面に収まるサイズに切り替わる。
 
-| 操作 | 詳細画面 |
-| --- | --- |
-| `1` | keep にして次へ |
-| `0` | reject にして次へ |
-| `←` `→` | 判定せず前後へ |
-| `Esc` | メニューを閉じる |
-
 ヘッダー右の `☰` で全ファイルの一覧が出る。緑が keep、赤が reject。`◐` で背景の明暗を切り替える。
 
-## 判定を元データに戻す
-
+## 選定結果を別のjsonに追加する．
+meta_data.jsonなどのデータセットの索引に選定結果を反映したいときに使う．
 ```
 python tools/add_status.py
 ```
 
-`DATA_ROOT/data.json` に `status` を足して `data/meta_data.json` に書き出す。元のファイルは
+対象ファイル`DATA_ROOT/data.json` に `status` を足して `data/meta_data.json` として書き出す。元のファイルは
 書き換えない。DATA_ROOT には何も書かない。
 
 ## 置き場所
