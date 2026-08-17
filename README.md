@@ -14,7 +14,8 @@ uv pip install -r requirements.txt
 cp .env.example .env          # DATA_ROOT に画像のある場所を書く
 ```
 
-`.env` はこれだけ。`DATA_ROOT/rgb/` に `.jpg` か `.png` が並んでいればよい。
+`.env` はこれだけ。`DATA_ROOT` に `.jpg` か `.png` が並んでいればよい。サブディレクトリは作らない。
+`.json` など他のファイルが同じ場所にあっても、拡張子で無視する。
 
 ```
 DATA_ROOT=D:/hs2026
@@ -61,10 +62,10 @@ python tools/add_status.py
 
 | 場所 | 中身 |
 | --- | --- |
-| `DATA_ROOT/rgb/{image_id}.jpg` | 写真。ファイル名が image_id |
+| `DATA_ROOT/{image_id}.jpg` | 写真。ファイル名が image_id |
 | `data/selection.json` | 判定結果。このアプリが書く唯一のファイル |
 | `cache/thumb/` | サムネイル。消して作り直しても安全 |
 | `.env` | DATA_ROOT。コミットしない |
 
-画像を追加または削除したら、アプリを再起動する。起動時に `rgb/` を読み直し、`selection.json`
+画像を追加または削除したら、アプリを再起動する。起動時に `DATA_ROOT` を読み直し、`selection.json`
 に足りない image_id を `unjudged` で追記する。既にある判定は書き換えない。

@@ -1,6 +1,6 @@
 """Stand in for the capture side until real data arrives.
 
-Writes data.json, scenes.json, and one RGB image per shot, all under DATA_ROOT.
+Writes data.json, scenes.json, and one RGB image per shot, all directly in DATA_ROOT.
 Raise SETS to 37 for the real scale of about 185 scenes.
 """
 
@@ -154,15 +154,12 @@ def main():
     write_json(root / "data.json", shots)
     write_json(root / "scenes.json", scenes)
 
-    rgb = root / "rgb"
-    rgb.mkdir(parents=True, exist_ok=True)
     for record in shots:
-        render(record).save(rgb / f"{record['image_id']}.jpg", quality=88)
+        render(record).save(root / f"{record['image_id']}.jpg", quality=88)
 
     calibration = sum(len(s["calibration"]) for s in scenes)
     print(f"{root}: {len(shots)} shots, {calibration} of them calibration")
-    print(f"{root}: {len(scenes)} scenes")
-    print(f"{rgb}: {len(shots)} images")
+    print(f"{root}: {len(scenes)} scenes, {len(shots)} images")
 
 
 if __name__ == "__main__":

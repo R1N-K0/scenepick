@@ -5,14 +5,13 @@ from flask import Flask, abort, jsonify, render_template, request, send_file
 
 import settings
 
-RGB = settings.data_root() / "rgb"
-if not RGB.is_dir():
-    raise SystemExit(f"rgb directory not found: {RGB}")
-
+DATA_ROOT = settings.data_root()
 THUMB = settings.ROOT / "cache" / "thumb"
 SELECTION = settings.ROOT / "data" / "selection.json"
 
-IMAGES = {p.stem: p for p in sorted(RGB.glob("*")) if p.suffix.lower() in (".jpg", ".png")}
+IMAGES = {p.stem: p for p in sorted(DATA_ROOT.glob("*")) if p.suffix.lower() in (".jpg", ".png")}
+if not IMAGES:
+    raise SystemExit(f"no .jpg or .png in {DATA_ROOT}")
 ORDER = list(IMAGES)
 
 app = Flask(__name__)

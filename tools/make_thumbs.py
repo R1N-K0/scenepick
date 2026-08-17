@@ -12,12 +12,12 @@ WIDTH = 320
 
 
 def main():
-    rgb = settings.data_root() / "rgb"
+    root = settings.data_root()
     thumb = settings.ROOT / "cache" / "thumb"
     thumb.mkdir(parents=True, exist_ok=True)
 
     made = 0
-    for src in sorted(rgb.glob("*")):
+    for src in sorted(root.glob("*")):
         if src.suffix.lower() not in (".jpg", ".png"):
             continue
         dst = thumb / f"{src.stem}.jpg"
