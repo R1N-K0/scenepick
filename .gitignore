@@ -3,5 +3,6 @@ __pycache__/
 .env
 cache/
 data/
+tmp/
 
 CLAUDE.md
