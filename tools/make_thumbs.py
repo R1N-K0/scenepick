@@ -17,7 +17,7 @@ def main():
     thumb.mkdir(parents=True, exist_ok=True)
 
     made = 0
-    for src in sorted(root.glob("*")):
+    for src in sorted(root.rglob("*")):
         if src.suffix.lower() not in (".jpg", ".png"):
             continue
         dst = thumb / f"{src.stem}.jpg"

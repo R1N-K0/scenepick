@@ -9,9 +9,25 @@ DATA_ROOT = settings.data_root()
 THUMB = settings.ROOT / "cache" / "thumb"
 SELECTION = settings.ROOT / "data" / "selection.json"
 
-IMAGES = {p.stem: p for p in sorted(DATA_ROOT.glob("*")) if p.suffix.lower() in (".jpg", ".png")}
+
+def find_images(root):
+    found = {}
+    for path in sorted(root.rglob("*")):
+        if path.suffix.lower() not in (".jpg", ".png"):
+            continue
+        if path.stem in found:
+            raise SystemExit(
+                f"two files claim the image_id {path.stem}: {found[path.stem]} and {path}"
+            )
+        found[path.stem] = path
+    # Ordered by image_id, not by path: capture order is in the filename, not in the
+    # directory names, which the app knows nothing about.
+    return dict(sorted(found.items()))
+
+
+IMAGES = find_images(DATA_ROOT)
 if not IMAGES:
-    raise SystemExit(f"no .jpg or .png in {DATA_ROOT}")
+    raise SystemExit(f"no .jpg or .png under {DATA_ROOT}")
 ORDER = list(IMAGES)
 
 app = Flask(__name__)
