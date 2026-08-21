@@ -13,6 +13,7 @@
   <span class="dim">{{ position }}</span>
   <button data-set="keep">keep</button>
   <button data-set="reject">reject</button>
+  <span id="pixel"></span>
   {% include "controls.html" %}
 </header>
 <div id="view"><img id="img" src="/rgb/{{ image_id }}" alt=""></div>
@@ -24,10 +25,32 @@ const prev = "{{ prev or '' }}";
 const next = "{{ next or '' }}";
 const bar = document.getElementById("bar");
 const img = document.getElementById("img");
+const pixel = document.getElementById("pixel");
 
 mountHeader(image_id);
 
-img.onclick = () => img.classList.toggle("fit");
+// The pixels are read in the browser: the server never opens an image while serving.
+let canvas = null;
+
+function pixelAt(e) {
+  if (!img.complete || !img.naturalWidth) return;
+  if (!canvas) {
+    const c = document.createElement("canvas");
+    c.width = img.naturalWidth;
+    c.height = img.naturalHeight;
+    canvas = c.getContext("2d", { willReadFrequently: true });
+    canvas.drawImage(img, 0, 0);
+  }
+  // fit mode scales the image down, so the click has to go through the rendered box.
+  const box = img.getBoundingClientRect();
+  const x = Math.min(Math.floor((e.clientX - box.left) / box.width * img.naturalWidth), img.naturalWidth - 1);
+  const y = Math.min(Math.floor((e.clientY - box.top) / box.height * img.naturalHeight), img.naturalHeight - 1);
+  const [r, g, b] = canvas.getImageData(x, y, 1, 1).data;
+  pixel.textContent = `RGB ${r} ${g} ${b}`;
+}
+
+img.onclick = pixelAt;
+img.ondblclick = () => img.classList.toggle("fit");
 
 bar.onclick = async (e) => {
   const button = e.target.closest("button[data-set]");

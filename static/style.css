@@ -71,6 +71,8 @@ button {
   cursor: pointer;
 }
 
+#pixel { font-family: ui-monospace, monospace; }
+
 #theme { margin-left: auto; }
 
 #menu {
