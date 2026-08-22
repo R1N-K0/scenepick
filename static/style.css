@@ -73,6 +73,9 @@ button {
 
 #pixel { font-family: ui-monospace, monospace; }
 
+/* Faded rather than dimmed, so the hint stays readable once the button is filled in. */
+.key { margin-left: 7px; opacity: 0.6; }
+
 #theme { margin-left: auto; }
 
 #menu {

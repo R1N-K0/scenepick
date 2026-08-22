@@ -11,8 +11,8 @@
   {% if next %}<a class="step" href="/shot/{{ next }}">&rarr;</a>{% else %}<span class="step dim">&rarr;</span>{% endif %}
   <span>{{ image_id }}</span>
   <span class="dim">{{ position }}</span>
-  <button data-set="keep">keep</button>
-  <button data-set="reject">reject</button>
+  <button data-set="keep">keep<span class="key">1</span></button>
+  <button data-set="reject">reject<span class="key">0</span></button>
   <span id="pixel"></span>
   {% include "controls.html" %}
 </header>
@@ -52,15 +52,22 @@ function pixelAt(e) {
 img.onclick = pixelAt;
 img.ondblclick = () => img.classList.toggle("fit");
 
-bar.onclick = async (e) => {
-  const button = e.target.closest("button[data-set]");
-  if (!button) return;
-  const want = bar.dataset.status === button.dataset.set ? "unjudged" : button.dataset.set;
+async function judge(status) {
+  const want = bar.dataset.status === status ? "unjudged" : status;
   bar.dataset.status = await setStatus(image_id, want);
+}
+
+bar.onclick = (e) => {
+  const button = e.target.closest("button[data-set]");
+  if (button) judge(button.dataset.set);
 };
 
+// 1 and 0 sit in the order the buttons do, and judging leaves the shot on screen, exactly
+// as pressing the button does. A key that also stepped on would put the misclick out of reach.
 addEventListener("keydown", (e) => {
   if (e.code === "ArrowLeft" && prev) location.href = `/shot/${prev}`;
   if (e.code === "ArrowRight" && next) location.href = `/shot/${next}`;
+  if (e.code === "Digit1") judge("keep");
+  if (e.code === "Digit0") judge("reject");
 });
 </script>
