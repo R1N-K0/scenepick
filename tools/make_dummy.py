@@ -1,6 +1,6 @@
 """Stand in for the capture side until real data arrives.
 
-Writes data.json, scenes.json, and one RGB image per shot, all directly in DATA_ROOT.
+Writes data.json, groups.json, and one RGB image per shot, all directly in DATA_ROOT.
 Raise SETS to 37 for the real scale of about 185 scenes.
 """
 
@@ -20,9 +20,6 @@ SCENES_PER_SET = 3
 START = datetime(2026, 8, 10, 9, 0, 0)
 INTERVAL = timedelta(seconds=20)
 WEATHER = ["sunny", "cloudy", "overcast"]
-OBJECTS = ["rabbit", "dragon", "teapot", "buddha", "armadillo", "lucy", "bunny"]
-BASE_LAT = 35.6812
-BASE_LON = 139.7671
 
 SIZE = (1280, 960)
 BLUR_RATE = 0.15
@@ -32,7 +29,7 @@ BLOWN_RATE = 0.08
 def build():
     random.seed(0)
     shots = []
-    scenes = []
+    groups = []
     scene_no = 0
     for set_no in range(1, SETS + 1):
         t = START + timedelta(days=set_no - 1)
@@ -41,30 +38,21 @@ def build():
             scene_id = str(scene_no)
             weather = random.choice(WEATHER)
             gain = random.choice([0, 10, 20, 30])
+            image_ids = []
 
-            calibration = []
             for suffix in ("wb", "cc"):
-                calibration.append(f"{t:%Y%m%d_%H%M%S}_{suffix}")
-                shots.append(shot(calibration[-1], scene_id, t, gain, weather))
+                image_ids.append(f"{t:%Y%m%d_%H%M%S}_{suffix}")
+                shots.append(shot(image_ids[-1], scene_id, t, gain, weather))
                 t += INTERVAL
 
             for _ in range(random.randint(12, 20)):
-                shots.append(shot(f"{t:%Y%m%d_%H%M%S}_01", scene_id, t, gain, weather))
+                image_ids.append(f"{t:%Y%m%d_%H%M%S}_01")
+                shots.append(shot(image_ids[-1], scene_id, t, gain, weather))
                 t += INTERVAL
 
-            scenes.append(
-                {
-                    "scene_id": scene_id,
-                    "calibration": calibration,
-                    "metadata": {
-                        "lat": round(BASE_LAT + random.uniform(-0.2, 0.2), 4),
-                        "lon": round(BASE_LON + random.uniform(-0.2, 0.2), 4),
-                        "objects": random.sample(OBJECTS, random.randint(2, 4)),
-                    },
-                }
-            )
+            groups.append({"name": f"scene {scene_id}", "image_ids": image_ids})
             t += timedelta(minutes=6)
-    return shots, scenes
+    return shots, groups
 
 
 def shot(image_id, scene_id, t, gain, weather):
@@ -150,16 +138,14 @@ def write_json(path, records):
 
 def main():
     root = settings.data_root()
-    shots, scenes = build()
+    shots, groups = build()
     write_json(root / "data.json", shots)
-    write_json(root / "scenes.json", scenes)
+    write_json(root / "groups.json", groups)
 
     for record in shots:
         render(record).save(root / f"{record['image_id']}.jpg", quality=88)
 
-    calibration = sum(len(s["calibration"]) for s in scenes)
-    print(f"{root}: {len(shots)} shots, {calibration} of them calibration")
-    print(f"{root}: {len(scenes)} scenes, {len(shots)} images")
+    print(f"{root}: {len(shots)} images, {len(groups)} groups")
 
 
 if __name__ == "__main__":

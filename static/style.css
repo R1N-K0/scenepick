@@ -117,11 +117,27 @@ button {
 #menu-list a[data-status="keep"] { color: var(--keep); }
 #menu-list a[data-status="reject"] { color: var(--reject); }
 
-#grid {
+#grid { padding: 12px; }
+
+.cells {
   display: grid;
   grid-template-columns: repeat(auto-fill, minmax(240px, 1fr));
   gap: 10px;
-  padding: 12px;
+}
+
+.cells[hidden] { display: none; }
+
+/* Sticky inside the section, not the page: the heading follows its own group and is gone
+   by the time the next one starts. */
+.group {
+  position: sticky;
+  top: 45px;
+  z-index: 5;
+  margin: 14px 0 8px;
+  padding: 6px 2px;
+  font-size: 15px;
+  background: var(--bg);
+  border-bottom: 1px solid var(--line);
 }
 
 .cell {

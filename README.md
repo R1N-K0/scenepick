@@ -6,8 +6,9 @@ uv pip install -r requirements.txt
 cp .env.example .env          # DATA_ROOT に画像のある場所を書く
 ```
 
-`.env` はこれだけ。`DATA_ROOT` に `.jpg` か `.png` が並んでいればよい。サブディレクトリは作らない。
-`.json` など他のファイルが同じ場所にあっても、拡張子で無視する。
+`.env` はこれだけ。`DATA_ROOT` の下に `.jpg` か `.png` があればよい。サブディレクトリの中も探す。
+`.json` など他のファイルが混ざっていても、拡張子で無視する。ファイル名から拡張子を取ったものが
+image_id になるので、同じファイル名が2つあると起動時に止まる。
 
 ```
 DATA_ROOT=D:/hs2026
@@ -34,11 +35,28 @@ python app.py                 # http://localhost:5000
 
 ヘッダー右の `☰` で全ファイルの一覧が出る。緑が keep、赤が reject。`◐` で背景の明暗を切り替える。
 
+## グループごとに表示する
+
+`DATA_ROOT/groups.json` があれば、その区切りで見出しを挟んで並べる。無ければ今まで通り一列に並ぶ。
+
+```json
+[
+  {"name": "scene 1", "image_ids": ["20260810_090000_wb", "20260810_090020_cc"]},
+  {"name": "scene 2", "image_ids": ["20260810_093000_wb"]}
+]
+```
+
+`name` が見出しに出る。リストの順がそのまま表示順。グループの中は image_id 順、つまり撮影順のまま。
+どのグループにも入らなかった画像は最後に `ungrouped` として出る。隠れることはない。
+
+ページは分かれない。見出しはスクロールに追従するだけで、そのまま下まで流して選定できる。
+
 ## 置き場所
 
 | 場所 | 中身 |
 | --- | --- |
-| `DATA_ROOT/{image_id}.jpg` | 写真。ファイル名が image_id |
+| `DATA_ROOT/**/{image_id}.jpg` | 写真。ファイル名が image_id |
+| `DATA_ROOT/groups.json` | グループ分け。任意 |
 | `data/selection.json` | 判定結果。このアプリが書く唯一のファイル |
 | `cache/thumb/` | サムネイル。消して作り直しても安全 |
 | `.env` | DATA_ROOT。コミットしない |

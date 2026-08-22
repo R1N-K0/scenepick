@@ -41,18 +41,47 @@ grid.onclick = async (e) => {
 // Filtering only on toggle, never on judgment: a cell that vanished the instant
 // you clicked it could not be un-clicked.
 only.onchange = () => {
-  for (const cell of grid.children) {
-    cell.hidden = only.checked && cell.dataset.status !== "unjudged";
+  for (const section of grid.children) {
+    let shown = 0;
+    for (const cell of section.querySelectorAll(".cell")) {
+      cell.hidden = only.checked && cell.dataset.status !== "unjudged";
+      shown += !cell.hidden;
+    }
+    section.hidden = !shown;
   }
 };
+
+function cell(i) {
+  return `<div class="cell" data-id="${i.image_id}" data-status="${i.status}">
+    <a href="/shot/${i.image_id}"><img loading="lazy" src="/thumb/${i.image_id}" alt=""></a>
+    <div class="row"><button data-set="keep">keep</button><button data-set="reject">reject</button></div>
+  </div>`;
+}
+
+// One page, not one page per group: failures come in runs, so a group boundary must not
+// interrupt comparing a shot with its neighbours. The heading only labels where it starts.
+function draw(images) {
+  if (!images[0].group) {
+    grid.innerHTML = `<div class="cells">${images.map(cell).join("")}</div>`;
+    return;
+  }
+  let html = "";
+  let open = null;
+  for (const i of images) {
+    if (i.group !== open) {
+      html += `${open === null ? "" : "</div></section>"}
+        <section><h2 class="group">${i.group}</h2><div class="cells">`;
+      open = i.group;
+    }
+    html += cell(i);
+  }
+  grid.innerHTML = `${html}</div></section>`;
+}
 
 fetch("/api/images").then(r => r.json()).then(images => {
   total = images.length;
   for (const i of images) n[i.status]++;
-  grid.innerHTML = images.map(i => `<div class="cell" data-id="${i.image_id}" data-status="${i.status}">
-    <a href="/shot/${i.image_id}"><img loading="lazy" src="/thumb/${i.image_id}" alt=""></a>
-    <div class="row"><button data-set="keep">keep</button><button data-set="reject">reject</button></div>
-  </div>`).join("");
+  draw(images);
   show();
 });
 </script>

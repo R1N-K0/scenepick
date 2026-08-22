@@ -25,10 +25,46 @@ def find_images(root):
     return dict(sorted(found.items()))
 
 
+UNGROUPED = "ungrouped"
+
+
+def read_groups(images):
+    """image_id -> group name, in the order the grid shows them. None without a groups.json.
+
+    A group may name a shot that has not been converted yet, and two groups may name the same
+    shot. Neither is worth stopping for. The first group to name a shot keeps it, so the grid
+    shows every image exactly once and the counts stay a count over the images.
+    """
+    path = DATA_ROOT / "groups.json"
+    if not path.is_file():
+        return None
+
+    placed = {}
+    unknown = 0
+    for group in json.loads(path.read_text(encoding="utf-8")):
+        for image_id in sorted(group["image_ids"]):
+            if image_id not in images:
+                unknown += 1
+            elif image_id not in placed:
+                placed[image_id] = group["name"]
+
+    # Whatever no group claimed goes last, still in image_id order.
+    loose = [i for i in images if i not in placed]
+    for image_id in loose:
+        placed[image_id] = UNGROUPED
+    print(
+        f"{path}: {len(placed) - len(loose)} grouped, {len(loose)} {UNGROUPED}"
+        f", {unknown} ids with no image",
+        flush=True,
+    )
+    return placed
+
+
 IMAGES = find_images(DATA_ROOT)
 if not IMAGES:
     raise SystemExit(f"no .jpg or .png under {DATA_ROOT}")
-ORDER = list(IMAGES)
+GROUPS = read_groups(IMAGES)
+ORDER = list(GROUPS or IMAGES)
 
 app = Flask(__name__)
 
@@ -96,7 +132,11 @@ def thumb(image_id):
 @app.get("/api/images")
 def api_images():
     selection = read_selection()
-    return jsonify([{"image_id": i, "status": selection.get(i, "unjudged")} for i in ORDER])
+    rows = [{"image_id": i, "status": selection.get(i, "unjudged")} for i in ORDER]
+    if GROUPS:
+        for row in rows:
+            row["group"] = GROUPS[row["image_id"]]
+    return jsonify(rows)
 
 
 @app.post("/api/status")
