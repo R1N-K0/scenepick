@@ -23,7 +23,7 @@ python tools/make_dummy.py
 ## 使い方
 
 ```
-python tools/make_thumbs.py   # サムネイルを先に作る
+python tools/make_thumbs.py   # サムネイルを先に作る(少し時間がかかる)
 python app.py                 # http://localhost:5000
 ```
 
@@ -31,8 +31,7 @@ python app.py                 # http://localhost:5000
 いつ閉じても続きから再開できる。「unjudged only」で未判定だけに絞れる。
 
 サムネイルをクリックすると詳細画面。最初は写真全体が映る。ヘッダー右の `⛶` かダブルクリックで
-等倍に切り替わり、ピントを確認できる。画像をクリックするとその画素の RGB 値がヘッダーに出る。白板が
-飽和していないかはここで見る。
+等倍に切り替わる.
 
 | キー | 詳細画面 |
 | --- | --- |
@@ -56,19 +55,12 @@ python app.py                 # http://localhost:5000
 ]
 ```
 
-`name` が見出しに出る。リストの順がそのまま表示順。グループの中は image_id 順、つまり撮影順のまま。
-どのグループにも入らなかった画像は最後に `ungrouped` として出る。隠れることはない。
-
-見出しの名前の横に、そのグループの枚数と keep / reject の数が出る。絞り込んでも数は変わらない。
-グループ全体の数であって、今見えている数ではない。
-
-ページは分かれない。見出しはスクロールに追従するだけで、そのまま下まで流して選定できる。
 
 ## 置き場所
 
 | 場所 | 中身 |
 | --- | --- |
-| `DATA_ROOT/**/{image_id}.jpg` | 写真。ファイル名が image_id |
+| `DATA_ROOT/**/{image_id}.png` | 写真。ファイル名が image_id |
 | `DATA_ROOT/groups.json` | グループ分け。任意 |
 | `data/selection.json` | 判定結果。このアプリが書く唯一のファイル |
 | `cache/thumb/` | サムネイル。消して作り直しても安全 |
