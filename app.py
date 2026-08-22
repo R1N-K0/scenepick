@@ -27,6 +27,10 @@ def find_images(root):
 
 UNGROUPED = "ungrouped"
 
+# groups.json names a group by its number alone. The word is the one thing the app assumes
+# about what a group is, and this is the only place it is written.
+GROUP_LABEL = "scene"
+
 
 def read_groups(images):
     """image_id -> group name, in the order the grid shows them. None without a groups.json.
@@ -46,7 +50,7 @@ def read_groups(images):
             if image_id not in images:
                 unknown += 1
             elif image_id not in placed:
-                placed[image_id] = group["name"]
+                placed[image_id] = f"{GROUP_LABEL} {group['name']}"
 
     # Whatever no group claimed goes last, still in image_id order.
     loose = [i for i in images if i not in placed]

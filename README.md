@@ -51,8 +51,8 @@ python app.py                 # http://localhost:5000
 
 ```json
 [
-  {"name": "scene 1", "image_ids": ["20260810_090000_wb", "20260810_090020_cc"]},
-  {"name": "scene 2", "image_ids": ["20260810_093000_wb"]}
+  {"name": "1", "image_ids": ["20260810_090000_wb", "20260810_090020_cc"]},
+  {"name": "2", "image_ids": ["20260810_093000_wb"]}
 ]
 ```
 

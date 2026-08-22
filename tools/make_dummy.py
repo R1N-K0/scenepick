@@ -50,7 +50,7 @@ def build():
                 shots.append(shot(image_ids[-1], scene_id, t, gain, weather))
                 t += INTERVAL
 
-            groups.append({"name": f"scene {scene_id}", "image_ids": image_ids})
+            groups.append({"name": scene_id, "image_ids": image_ids})
             t += timedelta(minutes=6)
     return shots, groups
 
