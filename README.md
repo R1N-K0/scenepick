@@ -34,15 +34,6 @@ python app.py                 # http://localhost:5000
 
 ヘッダー右の `☰` で全ファイルの一覧が出る。緑が keep、赤が reject。`◐` で背景の明暗を切り替える。
 
-## 選定結果を別のjsonに追加する．
-meta_data.jsonなどのデータセットの索引に選定結果を反映したいときに使う．
-```
-python tools/add_status.py
-```
-
-対象ファイル`DATA_ROOT/data.json` に `status` を足して `data/meta_data.json` として書き出す。元のファイルは
-書き換えない。DATA_ROOT には何も書かない。
-
 ## 置き場所
 
 | 場所 | 中身 |
