@@ -76,6 +76,12 @@ button {
 /* Faded rather than dimmed, so the hint stays readable once the button is filled in. */
 .key { margin-left: 7px; opacity: 0.6; }
 
+#fit[aria-pressed="true"] { background: var(--here); }
+
+/* The view controls sit together at the right, away from keep and reject. */
+#fit { margin-left: auto; }
+#fit ~ #theme { margin-left: 0; }
+
 #theme { margin-left: auto; }
 
 #menu {

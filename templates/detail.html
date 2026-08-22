@@ -14,9 +14,10 @@
   <button data-set="keep">keep<span class="key">1</span></button>
   <button data-set="reject">reject<span class="key">0</span></button>
   <span id="pixel"></span>
+  <button id="fit" aria-pressed="true" title="whole shot / native size">&#9974;</button>
   {% include "controls.html" %}
 </header>
-<div id="view"><img id="img" src="/rgb/{{ image_id }}" alt=""></div>
+<div id="view"><img id="img" class="fit" src="/rgb/{{ image_id }}" alt=""></div>
 
 <script src="/static/app.js"></script>
 <script>
@@ -26,6 +27,7 @@ const next = "{{ next or '' }}";
 const bar = document.getElementById("bar");
 const img = document.getElementById("img");
 const pixel = document.getElementById("pixel");
+const fit = document.getElementById("fit");
 
 mountHeader(image_id);
 
@@ -49,8 +51,15 @@ function pixelAt(e) {
   pixel.textContent = `RGB ${r} ${g} ${b}`;
 }
 
+// The shot opens whole. Native size opens on a corner of a 3000px image, which says nothing
+// about the shot until the reviewer has scrolled, and only blur needs native size.
+function toggleFit() {
+  fit.setAttribute("aria-pressed", img.classList.toggle("fit"));
+}
+
 img.onclick = pixelAt;
-img.ondblclick = () => img.classList.toggle("fit");
+img.ondblclick = toggleFit;
+fit.onclick = toggleFit;
 
 async function judge(status) {
   const want = bar.dataset.status === status ? "unjudged" : status;
