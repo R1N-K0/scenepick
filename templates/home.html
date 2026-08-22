@@ -36,7 +36,23 @@ grid.onclick = async (e) => {
   n[got]++;
   cell.dataset.status = got;
   show();
+  tally(cell.closest("section"));
 };
+
+// Counted off the cells rather than kept alongside them, so the heading cannot drift out of
+// step with what the grid shows. A group is small enough that recounting costs nothing.
+function tally(section) {
+  if (!section) return;
+  const cells = section.querySelectorAll(".cell");
+  let keep = 0;
+  let reject = 0;
+  for (const cell of cells) {
+    if (cell.dataset.status === "keep") keep++;
+    if (cell.dataset.status === "reject") reject++;
+  }
+  section.querySelector(".tally").textContent =
+    `${cells.length} shots   keep ${keep}   reject ${reject}`;
+}
 
 // Filtering only on toggle, never on judgment: a cell that vanished the instant
 // you clicked it could not be un-clicked.
@@ -70,12 +86,14 @@ function draw(images) {
   for (const i of images) {
     if (i.group !== open) {
       html += `${open === null ? "" : "</div></section>"}
-        <section><h2 class="group">${i.group}</h2><div class="cells">`;
+        <section><h2 class="group">${i.group}<span class="tally"></span></h2>
+        <div class="cells">`;
       open = i.group;
     }
     html += cell(i);
   }
   grid.innerHTML = `${html}</div></section>`;
+  for (const section of grid.children) tally(section);
 }
 
 fetch("/api/images").then(r => r.json()).then(images => {

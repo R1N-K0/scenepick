@@ -140,6 +140,12 @@ button {
   border-bottom: 1px solid var(--line);
 }
 
+.group .tally {
+  margin-left: 14px;
+  font-weight: normal;
+  color: var(--dim);
+}
+
 .cell {
   padding: 4px;
   border: 2px solid var(--frame);
