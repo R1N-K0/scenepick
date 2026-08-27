@@ -181,7 +181,6 @@ button {
 [data-status="keep"] button[data-set="keep"] { background: var(--keep); color: var(--on-accent); }
 [data-status="reject"] { border-color: var(--reject); }
 [data-status="reject"] button[data-set="reject"] { background: var(--reject); color: var(--on-accent); }
-[data-status="reject"] img { opacity: 0.35; }
 
 #view {
   overflow: auto;
