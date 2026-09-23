@@ -64,10 +64,34 @@ def read_groups(images):
     return placed
 
 
+def read_calibration(images):
+    """image_id -> [x0, y0, x1, y1], drawn over the shot and nothing more. {} without one."""
+    path = DATA_ROOT / "calibration.json"
+    if not path.is_file():
+        return {}
+
+    boxes = json.loads(path.read_text(encoding="utf-8"))
+    for image_id, box in boxes.items():
+        if not (
+            len(box) == 4
+            and all(type(v) is int for v in box)
+            and 0 <= box[0] < box[2]
+            and 0 <= box[1] < box[3]
+        ):
+            raise SystemExit(f"{path}: {image_id} is not [x0, y0, x1, y1]: {box}")
+    print(
+        f"{path}: {sum(1 for i in images if i in boxes)} boxes"
+        f", {sum(1 for i in boxes if i not in images)} ids with no image",
+        flush=True,
+    )
+    return boxes
+
+
 IMAGES = find_images(DATA_ROOT)
 if not IMAGES:
     raise SystemExit(f"no .jpg or .png under {DATA_ROOT}")
 GROUPS = read_groups(IMAGES)
+BOXES = read_calibration(IMAGES)
 ORDER = list(GROUPS or IMAGES)
 
 app = Flask(__name__)
@@ -107,6 +131,7 @@ def detail(image_id):
         "detail.html",
         image_id=image_id,
         status=read_selection().get(image_id, "unjudged"),
+        box=BOXES.get(image_id),
         prev=ORDER[at - 1] if at else None,
         next=ORDER[at + 1] if at + 1 < len(ORDER) else None,
         position=f"{at + 1} / {len(ORDER)}",

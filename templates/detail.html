@@ -17,7 +17,7 @@
   <button id="fit" aria-pressed="true" title="whole shot / native size">&#9974;</button>
   {% include "controls.html" %}
 </header>
-<div id="view"><img id="img" class="fit" src="/rgb/{{ image_id }}" alt=""></div>
+<div id="view"><img id="img" class="fit" src="/rgb/{{ image_id }}" alt="">{% if box %}<div id="box"></div>{% endif %}</div>
 
 <script src="/static/app.js"></script>
 <script>
@@ -55,6 +55,25 @@ function pixelAt(e) {
 // about the shot until the reviewer has scrolled, and only blur needs native size.
 function toggleFit() {
   fit.setAttribute("aria-pressed", img.classList.toggle("fit"));
+}
+
+// Placed from the image's rendered box, so it follows both fit and native size.
+const box = {{ box | tojson }};
+if (box) {
+  const view = document.getElementById("view");
+  const frame = document.getElementById("box");
+  const place = () => {
+    const scale = img.offsetWidth / img.naturalWidth;
+    if (!scale) return;
+    frame.style.left = `${img.offsetLeft + box[0] * scale}px`;
+    frame.style.top = `${img.offsetTop + box[1] * scale}px`;
+    frame.style.width = `${(box[2] - box[0]) * scale}px`;
+    frame.style.height = `${(box[3] - box[1]) * scale}px`;
+  };
+  // The view too: a height-bound image moves sideways without changing size.
+  const watch = new ResizeObserver(place);
+  watch.observe(img);
+  watch.observe(view);
 }
 
 img.onclick = pixelAt;

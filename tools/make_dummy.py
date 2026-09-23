@@ -1,6 +1,7 @@
 """Stand in for the capture side until real data arrives.
 
-Writes data.json, groups.json, and one RGB image per shot, all directly in DATA_ROOT.
+Writes data.json, groups.json, calibration.json, and one RGB image per shot, all directly in
+DATA_ROOT. Every shot has the white board and its two markers in frame.
 Raise SETS to 37 for the real scale of about 185 scenes.
 """
 
@@ -40,11 +41,6 @@ def build():
             gain = random.choice([0, 10, 20, 30])
             image_ids = []
 
-            for suffix in ("wb", "cc"):
-                image_ids.append(f"{t:%Y%m%d_%H%M%S}_{suffix}")
-                shots.append(shot(image_ids[-1], scene_id, t, gain, weather))
-                t += INTERVAL
-
             for _ in range(random.randint(12, 20)):
                 image_ids.append(f"{t:%Y%m%d_%H%M%S}_01")
                 shots.append(shot(image_ids[-1], scene_id, t, gain, weather))
@@ -75,28 +71,6 @@ def font(size):
         return ImageFont.load_default()
 
 
-def whiteboard():
-    img = Image.new("RGB", SIZE, (208, 208, 204))
-    d = ImageDraw.Draw(img)
-    d.rectangle((160, 120, SIZE[0] - 160, SIZE[1] - 120), fill=(244, 244, 242))
-    return img
-
-
-def colorchecker():
-    img = Image.new("RGB", SIZE, (40, 40, 40))
-    d = ImageDraw.Draw(img)
-    random.seed(1)
-    cell_w, cell_h = SIZE[0] // 8, SIZE[1] // 6
-    for row in range(4):
-        for col in range(6):
-            x, y = (col + 1) * cell_w, (row + 1) * cell_h
-            d.rectangle(
-                (x, y, x + cell_w - 8, y + cell_h - 8),
-                fill=tuple(random.randrange(30, 226) for _ in range(3)),
-            )
-    return img
-
-
 def capture(seed):
     rng = random.Random(seed)
     img = Image.new("RGB", SIZE, tuple(rng.randrange(60, 140) for _ in range(3)))
@@ -109,25 +83,32 @@ def capture(seed):
             d.ellipse((x, y, x + side, y + side), fill=color)
         else:
             d.rectangle((x, y, x + side, y + side), fill=color)
+    box = board(d, rng)
     if rng.random() < BLUR_RATE:
         img = img.filter(ImageFilter.GaussianBlur(rng.uniform(4, 9)))
     if rng.random() < BLOWN_RATE:
         img = Image.blend(img, Image.new("RGB", SIZE, (255, 255, 255)), 0.65)
-    return img
+    return img, box
+
+
+def board(d, rng):
+    """The white board with a marker under each bottom corner. Returns its [x0, y0, x1, y1]."""
+    x0, y0 = rng.randrange(760, 840), rng.randrange(480, 560)
+    x1, y1 = x0 + 360, y0 + 240
+    # PIL fills x1 and y1 themselves; calibration.json's x1 and y1 are exclusive.
+    d.rectangle((x0, y0, x1 - 1, y1 - 1), fill=(244, 244, 242))
+    for x in (x0, x1 - 60):
+        d.rectangle((x, y1 + 40, x + 59, y1 + 99), fill=(0, 0, 0))
+        d.rectangle((x + 15, y1 + 55, x + 29, y1 + 69), fill=(255, 255, 255))
+    return [x0, y0, x1, y1]
 
 
 def render(record):
-    image_id = record["image_id"]
-    if image_id.endswith("_wb"):
-        img = whiteboard()
-    elif image_id.endswith("_cc"):
-        img = colorchecker()
-    else:
-        img = capture(image_id)
+    img, box = capture(record["image_id"])
     d = ImageDraw.Draw(img)
-    d.text((40, 32), image_id, fill=(0, 0, 0), font=font(44))
+    d.text((40, 32), record["image_id"], fill=(0, 0, 0), font=font(44))
     d.text((40, 88), f"scene {record['scene_id']}", fill=(0, 0, 0), font=font(36))
-    return img
+    return img, box
 
 
 def write_json(path, records):
@@ -142,8 +123,11 @@ def main():
     write_json(root / "data.json", shots)
     write_json(root / "groups.json", groups)
 
+    boxes = {}
     for record in shots:
-        render(record).save(root / f"{record['image_id']}.jpg", quality=88)
+        img, boxes[record["image_id"]] = render(record)
+        img.save(root / f"{record['image_id']}.jpg", quality=88)
+    write_json(root / "calibration.json", boxes)
 
     print(f"{root}: {len(shots)} images, {len(groups)} groups")
 

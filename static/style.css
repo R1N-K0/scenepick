@@ -183,6 +183,7 @@ button {
 [data-status="reject"] button[data-set="reject"] { background: var(--reject); color: var(--on-accent); }
 
 #view {
+  position: relative;
   overflow: auto;
   height: calc(100vh - 45px);
   background: var(--void);
@@ -190,3 +191,10 @@ button {
 
 #view img { display: block; }
 #view img.fit { max-width: 100%; max-height: calc(100vh - 45px); margin: auto; }
+
+/* Clicks go through to the image, so the pixel readout and double-click still work. */
+#box {
+  position: absolute;
+  border: 1px solid #f0f;
+  pointer-events: none;
+}
