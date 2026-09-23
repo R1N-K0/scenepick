@@ -1,6 +1,6 @@
 """Stand in for the capture side until real data arrives.
 
-Writes data.json, groups.json, calibration.json, and one RGB image per shot, all directly in
+Writes data.json, group.json, calibration.json, and one RGB image per shot, all directly in
 DATA_ROOT. Every shot has the white board and its two markers in frame.
 Raise SETS to 37 for the real scale of about 185 scenes.
 """
@@ -121,7 +121,7 @@ def main():
     root = settings.data_root()
     shots, groups = build()
     write_json(root / "data.json", shots)
-    write_json(root / "groups.json", groups)
+    write_json(root / "group.json", groups)
 
     boxes = {}
     for record in shots:

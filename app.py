@@ -27,19 +27,19 @@ def find_images(root):
 
 UNGROUPED = "ungrouped"
 
-# groups.json names a group by its number alone. The word is the one thing the app assumes
+# group.json names a group by its number alone. The word is the one thing the app assumes
 # about what a group is, and this is the only place it is written.
 GROUP_LABEL = "scene"
 
 
 def read_groups(images):
-    """image_id -> group name, in the order the grid shows them. None without a groups.json.
+    """image_id -> group name, in the order the grid shows them. None without a group.json.
 
     A group may name a shot that has not been converted yet, and two groups may name the same
     shot. Neither is worth stopping for. The first group to name a shot keeps it, so the grid
     shows every image exactly once and the counts stay a count over the images.
     """
-    path = DATA_ROOT / "groups.json"
+    path = DATA_ROOT / "group.json"
     if not path.is_file():
         return None
 

@@ -22,7 +22,7 @@ python tools/make_dummy.py
 
 ## 新しいデータが届いたら
 
-1. 届いた RGB を `DATA_ROOT` の下に置く。`groups.json`・`calibration.json` も届いていれば `DATA_ROOT` 直下に置き換える
+1. 届いた RGB を `DATA_ROOT` の下に置く。`group.json`・`calibration.json` も届いていれば `DATA_ROOT` 直下に置き換える
 2. `python tools/make_thumbs.py`
 3. `python app.py`（起動中なら止めてから）
 4. 「unjudged only」で新しい分だけを判定する。全部 keep か reject にする
@@ -58,7 +58,7 @@ python app.py                 # http://localhost:5000
 
 ## グループごとに表示する
 
-`DATA_ROOT/groups.json` があれば、その区切りで見出しを挟んで並べる。無ければ今まで通り一列に並ぶ。
+`DATA_ROOT/group.json` があれば、その区切りで見出しを挟んで並べる。無ければ今まで通り一列に並ぶ。
 
 ```json
 [
@@ -84,7 +84,7 @@ python app.py                 # http://localhost:5000
 | 場所 | 中身 |
 | --- | --- |
 | `DATA_ROOT/**/{image_id}.png` | 写真。ファイル名が image_id |
-| `DATA_ROOT/groups.json` | グループ分け。任意 |
+| `DATA_ROOT/group.json` | グループ分け。任意 |
 | `DATA_ROOT/calibration.json` | 白板の範囲。任意 |
 | `data/selection.json` | 判定結果。このアプリが書く唯一のファイル |
 | `cache/thumb/` | サムネイル。消して作り直しても安全 |
