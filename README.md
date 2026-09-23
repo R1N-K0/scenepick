@@ -20,6 +20,18 @@ DATA_ROOT=D:/hs2026
 python tools/make_dummy.py
 ```
 
+## 新しいデータが届いたら
+
+1. 届いた RGB を `DATA_ROOT` の下に置く。`groups.json`・`calibration.json` も届いていれば `DATA_ROOT` 直下に置き換える
+2. `python tools/make_thumbs.py`
+3. `python app.py`（起動中なら止めてから）
+4. 「unjudged only」で新しい分だけを判定する。全部 keep か reject にする
+5. `data/selection.json` を送る
+
+- **同じ PC・同じフォルダの scenepick を使い続ける。** `data/selection.json` は前の分の判定も持ち続けるので、送るのは毎回このファイル1つでよい
+- **`data/selection.json` は消さない・作り直さない。** 前の分の判定が消える
+- 前に届いた画像は `DATA_ROOT` から消してもよい。判定は残る
+
 ## 使い方
 
 ```
