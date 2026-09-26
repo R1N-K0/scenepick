@@ -31,6 +31,7 @@ python tools/make_dummy.py
 - **同じ PC・同じフォルダの scenepick を使い続ける。** `data/selection.json` は前の分の判定も持ち続けるので、送るのは毎回このファイル1つでよい
 - **`data/selection.json` は消さない・作り直さない。** 前の分の判定が消える
 - 前に届いた画像は `DATA_ROOT` から消してもよい。判定は残る
+- 起動時の `N ids with no image` は、`group.json` に載っている前の分の画像の数。消した画像の分なので正常
 
 ## 使い方
 
