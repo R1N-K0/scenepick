@@ -182,15 +182,21 @@ button {
 [data-status="reject"] { border-color: var(--reject); }
 [data-status="reject"] button[data-set="reject"] { background: var(--reject); color: var(--on-accent); }
 
+/* The padding is room for the status frame, reserved so judging never shifts the image. */
 #view {
   position: relative;
   overflow: auto;
   height: calc(100vh - 45px);
+  padding: 3px;
   background: var(--void);
 }
 
 #view img { display: block; }
-#view img.fit { max-width: 100%; max-height: calc(100vh - 45px); margin: auto; }
+#view img.fit { max-width: 100%; max-height: calc(100vh - 45px - 6px); margin: auto; }
+
+/* Outside the image, so no edge pixel is covered and the calibration box stays inside it. */
+#bar[data-status="keep"] ~ #view img { outline: 3px solid var(--keep); }
+#bar[data-status="reject"] ~ #view img { outline: 3px solid var(--reject); }
 
 /* Clicks go through to the image, so the pixel readout and double-click still work. */
 #box {
