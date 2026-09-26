@@ -22,16 +22,31 @@ python tools/make_dummy.py
 
 ## 新しいデータが届いたら
 
-1. 届いた RGB を `DATA_ROOT` の下に置く。`group.json`・`calibration.json` も届いていれば `DATA_ROOT` 直下に置き換える
+撮影のまとまりごとに、RGB の ZIP が RGB 化担当から、`group.json` と `calibration.json` が本人から届く。
+まとまりは日付単位ではない（複数日の撮影をまとめて1回で届く）。
+
+**毎回やるファイルの入れ替え**
+
+| | 対象 | |
+| --- | --- | --- |
+| 消す | `DATA_ROOT` の下の、前のまとまりの RGB | 容量のため。判定は `data/selection.json` に残る。消さなくても動く |
+| 消してよい | `cache/thumb/` | サムネイル。いつ消しても作り直せる |
+| 置く | 今回の ZIP を展開した RGB を `DATA_ROOT` の下に | フォルダ分けは自由。同じ ZIP を2か所に展開すると、同じファイル名が2つになって起動時に止まる |
+| 置き換える | `DATA_ROOT/group.json`・`DATA_ROOT/calibration.json` を、届いたもので上書き | どちらも前のまとまりの分も含んだ1本。足さずに丸ごと置き換える |
+| 触らない | `data/selection.json`・`.env` | `selection.json` を消す・作り直すと、前のまとまりの判定が消える |
+
+**手順**
+
+1. 上の表のとおりに入れ替える
 2. `python tools/make_thumbs.py`
 3. `python app.py`（起動中なら止めてから）
-4. 「unjudged only」で新しい分だけを判定する。全部 keep か reject にする
-5. `data/selection.json` を送る
+4. 起動時の1行 `group.json: N grouped, 0 ungrouped, M ids with no image` を見る。
+   **`ungrouped` が 0 でなければ `group.json` が今回の分より古い。** 判定を始めずに本人に知らせる。
+   `ids with no image` は消した前のまとまりの画像の数なので、0 でなくてよい
+5. 「unjudged only」で今回の分だけを判定する。全部 keep か reject にする
+6. `data/selection.json` を丸ごと本人に送る
 
-- **同じ PC・同じフォルダの scenepick を使い続ける。** `data/selection.json` は前の分の判定も持ち続けるので、送るのは毎回このファイル1つでよい
-- **`data/selection.json` は消さない・作り直さない。** 前の分の判定が消える
-- 前に届いた画像は `DATA_ROOT` から消してもよい。判定は残る
-- 起動時の `N ids with no image` は、`group.json` に載っている前の分の画像の数。消した画像の分なので正常
+- **同じ PC・同じフォルダの scenepick を使い続ける。** `data/selection.json` は前の分の判定も持ち続けるので、送るのは毎回このファイル1つでよい。別の PC・別のフォルダに移ると前の分の判定が消える
 
 ## 使い方
 
