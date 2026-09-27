@@ -53,3 +53,12 @@ def selection_path():
     """
     value = _read_env().get("SELECTION", "")
     return Path(value) if value else ROOT / "data" / "selection.json"
+
+
+def port():
+    """PORT from .env, else Flask's 5000.
+
+    The reviewer and the mask correctors work on one Windows machine over remote desktop,
+    and their sessions share one network stack: two apps on 5000 and the second will not start.
+    """
+    return int(_read_env().get("PORT", "") or 5000)
