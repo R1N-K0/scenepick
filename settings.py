@@ -42,3 +42,14 @@ def rgb_root():
     if not path.is_dir():
         raise SystemExit(f"RGB_ROOT does not exist: {path}")
     return path
+
+
+def selection_path():
+    """SELECTION when .env sets it, else data/selection.json in this repository.
+
+    On the NAS the verdicts are written where the ledger side reads them, so nobody has to
+    send the file on. It stays a file of its own: maskeditor rewrites its own selection.json
+    whole on every reject, and two apps writing one file would drop each other's saves.
+    """
+    value = _read_env().get("SELECTION", "")
+    return Path(value) if value else ROOT / "data" / "selection.json"

@@ -7,7 +7,7 @@ import settings
 
 DATA_ROOT = settings.data_root()
 THUMB = settings.ROOT / "cache" / "thumb"
-SELECTION = settings.ROOT / "data" / "selection.json"
+SELECTION = settings.selection_path()
 
 
 def find_images(root):
