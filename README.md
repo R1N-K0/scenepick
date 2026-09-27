@@ -6,7 +6,8 @@ uv pip install -r requirements.txt
 cp .env.example .env          # DATA_ROOT に画像のある場所を書く
 ```
 
-`.env` はこれだけ。`DATA_ROOT` の下に `.jpg` か `.png` があればよい。サブディレクトリの中も探す。
+`.env` に要るのは `DATA_ROOT` だけ。`DATA_ROOT` の下に `.jpg` か `.png` があればよい。サブディレクトリの中も探す。
+NAS で使うときは `RGB_ROOT`・`SELECTION`・`PORT` も書く（→「NAS で使う」）。
 `.json` など他のファイルが混ざっていても、拡張子で無視する。ファイル名から拡張子を取ったものが
 image_id になるので、同じファイル名が2つあると起動時に止まる。
 
@@ -20,33 +21,38 @@ DATA_ROOT=D:/hs2026
 python tools/make_dummy.py
 ```
 
-## 新しいデータが届いたら
+## NAS で使う
 
-撮影のまとまりごとに、RGB の ZIP が RGB 化担当から、`group.json` と `calibration.json` が本人から届く。
-まとまりは日付単位ではない（複数日の撮影をまとめて1回で届く）。
+画像も `group.json` も判定も NAS に置き，リモートの Windows から scenepick を動かす．
+ファイルを手で置いたり，消したり，送ったりすることは無い．
 
-**毎回やるファイルの入れ替え**
+**`.env`（初回だけ）**
 
-| | 対象 | |
-| --- | --- | --- |
-| 消す | `DATA_ROOT` の下の、前のまとまりの RGB | 容量のため。判定は `data/selection.json` に残る。消さなくても動く |
-| 消してよい | `cache/thumb/` | サムネイル。いつ消しても作り直せる |
-| 置く | 今回の ZIP を展開した RGB を `DATA_ROOT` の下に | フォルダ分けは自由。同じ ZIP を2か所に展開すると、同じファイル名が2つになって起動時に止まる |
-| 置き換える | `DATA_ROOT/group.json`・`DATA_ROOT/calibration.json` を、届いたもので上書き | どちらも前のまとまりの分も含んだ1本。足さずに丸ごと置き換える |
-| 触らない | `data/selection.json`・`.env` | `selection.json` を消す・作り直すと、前のまとまりの判定が消える |
+```
+DATA_ROOT=Z:/datasets/hyperspectral/cvpr_work
+RGB_ROOT=Z:/datasets/hyperspectral/cvpr_dataset
+SELECTION=Z:/datasets/hyperspectral/cvpr_work/scenepick/selection.json
+PORT=5002
+```
 
-**手順**
+- `Z:` は，ネットワークドライブの割り当てで NAS を割り当てたドライブ．自分の割り当てに合わせて書く
+- `RGB_ROOT` は画像（読むだけ），`DATA_ROOT` は `group.json` と `calibration.json`（本人が置く），`SELECTION` は判定を書く場所
+- `PORT` は，同じ Windows で他の人が使っていない番号にする（本人に聞く）．同じ番号だと2人目のアプリが立ち上がらない
 
-1. 上の表のとおりに入れ替える
-2. `python tools/make_thumbs.py`
-3. `python app.py`（起動中なら止めてから）
-4. 起動時の1行 `group.json: N grouped, 0 ungrouped, M ids with no image` を見る。
-   **`ungrouped` が 0 でなければ `group.json` が今回の分より古い。** 判定を始めずに本人に知らせる。
-   `ids with no image` は消した前のまとまりの画像の数なので、0 でなくてよい
-5. 「unjudged only」で今回の分だけを判定する。全部 keep か reject にする
-6. `data/selection.json` を丸ごと本人に送る
+**まとまりごと**
 
-- **同じ PC・同じフォルダの scenepick を使い続ける。** `data/selection.json` は前の分の判定も持ち続けるので、送るのは毎回このファイル1つでよい。別の PC・別のフォルダに移ると前の分の判定が消える
+本人から「まとまり N の `group.json` ができた」と連絡が来たら：
+
+1. `python tools/make_thumbs.py`（新しい分のサムネイルだけ作る）
+2. `python app.py`（起動中なら止めてから）
+3. 「unjudged only」で，今回の分を全部 keep か reject にする
+4. 終わったら本人に伝える．判定は `SELECTION` に保存されているので，送らなくてよい
+
+- 起動時の1行 `group.json: N grouped, M ungrouped, ...` の `ungrouped` は，NAS に置かれたがまだ `group` されていない画像．
+  **`ungrouped` の画像は判定しない．** 次の連絡のあと，シーンに分かれてから判定する
+- **NAS の `cvpr_dataset/` と `cvpr_work/` の中のファイルは，開いて書き換えたり，消したり，動かしたりしない．** 画像は RGB 化担当の，`cvpr_work/` は本人とアプリの置き場所
+- **scenepick は1か所でだけ動かす．** 2か所で同時に立ち上げると，同じ `selection.json` を両方が書き直し，片方の判定が消える
+- `cache/thumb/` はいつ消してもよい（作り直せる）
 
 ## 使い方
 
@@ -99,10 +105,10 @@ python app.py                 # http://localhost:5000
 
 | 場所 | 中身 |
 | --- | --- |
-| `DATA_ROOT/**/{image_id}.png` | 写真。ファイル名が image_id |
+| `DATA_ROOT/**/{image_id}.png` | 写真。ファイル名が image_id（`RGB_ROOT` を書いたらその下） |
 | `DATA_ROOT/group.json` | グループ分け。任意 |
 | `DATA_ROOT/calibration.json` | 白板の範囲。任意 |
-| `data/selection.json` | 判定結果。このアプリが書く唯一のファイル |
+| `data/selection.json` | 判定結果。このアプリが書く唯一のファイル（`SELECTION` を書いたらそちら） |
 | `cache/thumb/` | サムネイル。消して作り直しても安全 |
 | `.env` | DATA_ROOT。コミットしない |
 
