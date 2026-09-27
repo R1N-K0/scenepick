@@ -1,4 +1,4 @@
-"""Reads .env. DATA_ROOT is the only absolute path in the project."""
+"""Reads .env. DATA_ROOT, and RGB_ROOT where it is set, are the absolute paths in the project."""
 
 from pathlib import Path
 
@@ -26,4 +26,19 @@ def data_root():
     path = Path(value)
     if not path.is_dir():
         raise SystemExit(f"DATA_ROOT does not exist: {path}")
+    return path
+
+
+def rgb_root():
+    """RGB_ROOT when .env sets it, else DATA_ROOT.
+
+    On the NAS the pictures sit where RGB conversion writes them, which this app only reads;
+    group.json and calibration.json sit in DATA_ROOT beside the other working files.
+    """
+    value = _read_env().get("RGB_ROOT", "")
+    if not value:
+        return data_root()
+    path = Path(value)
+    if not path.is_dir():
+        raise SystemExit(f"RGB_ROOT does not exist: {path}")
     return path

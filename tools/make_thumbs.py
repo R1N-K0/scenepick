@@ -18,7 +18,7 @@ def duration(seconds):
 
 
 def main():
-    root = settings.data_root()
+    root = settings.rgb_root()
     thumb = settings.ROOT / "cache" / "thumb"
     thumb.mkdir(parents=True, exist_ok=True)
 

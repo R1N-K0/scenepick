@@ -87,9 +87,10 @@ def read_calibration(images):
     return boxes
 
 
-IMAGES = find_images(DATA_ROOT)
+RGB_ROOT = settings.rgb_root()
+IMAGES = find_images(RGB_ROOT)
 if not IMAGES:
-    raise SystemExit(f"no .jpg or .png under {DATA_ROOT}")
+    raise SystemExit(f"no .jpg or .png under {RGB_ROOT}")
 GROUPS = read_groups(IMAGES)
 BOXES = read_calibration(IMAGES)
 ORDER = list(GROUPS or IMAGES)
