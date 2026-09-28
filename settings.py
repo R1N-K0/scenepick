@@ -29,19 +29,29 @@ def data_root():
     return path
 
 
-def rgb_root():
-    """RGB_ROOT when .env sets it, else DATA_ROOT.
+def rgb_roots():
+    """The directories RGB_ROOT names when .env sets it, else [DATA_ROOT].
 
     On the NAS the pictures sit where RGB conversion writes them, which this app only reads;
     group.json and calibration.json sit in DATA_ROOT beside the other working files.
+
+    RGB_ROOT may hold a `*`. Each batch holds the same shots three times -- rgb/ for the
+    dataset, rgb_sat/ for this app (saturated pixels show red), rgb_view/ for annotating --
+    so reading a whole batch finds every image_id three times. .../cvpr_dataset/*/rgb_sat
+    reads this app's version from every batch, and a new batch needs no new setting.
     """
     value = _read_env().get("RGB_ROOT", "")
     if not value:
-        return data_root()
-    path = Path(value)
-    if not path.is_dir():
-        raise SystemExit(f"RGB_ROOT does not exist: {path}")
-    return path
+        return [data_root()]
+    parts = Path(value).parts
+    at = next((i for i, part in enumerate(parts) if "*" in part), None)
+    if at is None:
+        roots = [Path(value)] if Path(value).is_dir() else []
+    else:
+        roots = sorted(p for p in Path(*parts[:at]).glob("/".join(parts[at:])) if p.is_dir())
+    if not roots:
+        raise SystemExit(f"RGB_ROOT names no directory: {value}")
+    return roots
 
 
 def selection_path():

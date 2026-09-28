@@ -10,9 +10,9 @@ THUMB = settings.ROOT / "cache" / "thumb"
 SELECTION = settings.selection_path()
 
 
-def find_images(root):
+def find_images(roots):
     found = {}
-    for path in sorted(root.rglob("*")):
+    for path in sorted(p for root in roots for p in root.rglob("*")):
         if path.suffix.lower() not in (".jpg", ".png"):
             continue
         if path.stem in found:
@@ -87,10 +87,10 @@ def read_calibration(images):
     return boxes
 
 
-RGB_ROOT = settings.rgb_root()
-IMAGES = find_images(RGB_ROOT)
+RGB_ROOTS = settings.rgb_roots()
+IMAGES = find_images(RGB_ROOTS)
 if not IMAGES:
-    raise SystemExit(f"no .jpg or .png under {RGB_ROOT}")
+    raise SystemExit(f"no .jpg or .png under {', '.join(map(str, RGB_ROOTS))}")
 GROUPS = read_groups(IMAGES)
 BOXES = read_calibration(IMAGES)
 ORDER = list(GROUPS or IMAGES)

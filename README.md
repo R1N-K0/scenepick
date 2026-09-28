@@ -30,13 +30,14 @@ python tools/make_dummy.py
 
 ```
 DATA_ROOT=Z:/datasets/hyperspectral/cvpr_work
-RGB_ROOT=Z:/datasets/hyperspectral/cvpr_dataset
+RGB_ROOT=Z:/datasets/hyperspectral/cvpr_dataset/*/rgb_sat
 SELECTION=Z:/datasets/hyperspectral/cvpr_work/scenepick/selection.json
 PORT=5002
 ```
 
 - `Z:` は，ネットワークドライブの割り当てで NAS を割り当てたドライブ．自分の割り当てに合わせて書く
-- `RGB_ROOT` は画像（読むだけ），`DATA_ROOT` は `group.json` と `calibration.json`（本人が置く），`SELECTION` は判定を書く場所
+- `RGB_ROOT` は画像（読むだけ）．各まとまりには同じ画像が `rgb/`・`rgb_sat/`・`rgb_view/` の3版あるので，`*/rgb_sat` で選定用の版（飽和したところが赤くなる）だけを読む．まとまりが増えても書き換えない
+- `DATA_ROOT` は `group.json` と `calibration.json`（本人が置く），`SELECTION` は判定を書く場所
 - `PORT` は，同じ Windows で他の人が使っていない番号にする（本人に聞く）．同じ番号だと2人目のアプリが立ち上がらない
 
 **まとまりごと**

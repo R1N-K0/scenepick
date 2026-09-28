@@ -18,11 +18,12 @@ def duration(seconds):
 
 
 def main():
-    root = settings.rgb_root()
+    roots = settings.rgb_roots()
     thumb = settings.ROOT / "cache" / "thumb"
     thumb.mkdir(parents=True, exist_ok=True)
 
-    sources = [p for p in sorted(root.rglob("*")) if p.suffix.lower() in (".jpg", ".png")]
+    sources = [p for p in sorted(p for root in roots for p in root.rglob("*"))
+               if p.suffix.lower() in (".jpg", ".png")]
     todo = [p for p in sources if not (thumb / f"{p.stem}.jpg").exists()]
     print(f"{len(sources)} images, {len(todo)} without a thumbnail")
 
