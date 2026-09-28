@@ -8,6 +8,12 @@ if not exist .venv\Scripts\python.exe (
     echo Run setup_nas.bat first.
     goto :end
 )
+rem A clone takes the latest changes on every start; a ZIP download simply runs as it is.
+rem .env, .venv and cache are not in git, so a pull never meets them.
+if exist .git (
+    git pull -q --ff-only || echo Could not update; starting the version already here.
+    .venv\Scripts\python -m pip install -q -r requirements.txt
+)
 set "PORT=5000"
 for /f "tokens=1,* delims==" %%a in ('findstr /b /c:"PORT=" .env') do set "PORT=%%b"
 
