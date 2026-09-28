@@ -28,7 +28,15 @@ python tools/make_dummy.py
 
 **初回だけ**
 
-`setup_nas.bat` をダブルクリックする。Python の環境（`.venv/`）を作り，`.env` を書く．
+自分のユーザーのフォルダの直下（例 `C:\Users\<自分>\scenepick`）に clone する．OneDrive が同期しているフォルダ（ドキュメント・デスクトップなど）と NAS の中は避ける
+（`.venv/` とサムネイルの何千ものファイルが同期や NAS の上に乗って遅くなり，NAS ではもう1人の選定担当の分と混ざる）．
+
+```
+git clone https://github.com/R1N-K0/scenepick.git
+```
+
+clone しておけば，`start.bat` が起動のたびに `git pull` して最新になる（ZIP で落としたものも動くが，更新は受け取らない）．
+そのあと `setup_nas.bat` をダブルクリックする。Python の環境（`.venv/`）を作り，`.env` を書く．
 `.env` は，`cvpr_work` のある NAS のドライブを探して，次の形で書く（見つからなければ，エクスプローラーのアドレス欄からパスを貼ってもらう）．
 `.env` が既にあれば書き換えない．
 
@@ -48,7 +56,7 @@ PORT=5101
 
 本人から「まとまり N の `group.json` ができた」と連絡が来たら：
 
-1. `start.bat` をダブルクリック．新しい分のサムネイルを作り，scenepick を立ち上げ，ブラウザで `http://localhost:5101` を開く．
+1. `start.bat` をダブルクリック．clone なら最新を受け取り，新しい分のサムネイルを作り，scenepick を立ち上げ，ブラウザで `http://localhost:5101` を開く．
    止めるときは黒いウィンドウを閉じる（起動中なら閉じてからダブルクリックし直す）
 2. 黒いウィンドウに「port 5101 is already in use」と出たら，もう1人が作業中．閉じて声をかける
 3. 「unjudged only」で，今回の分を全部 keep か reject にする
