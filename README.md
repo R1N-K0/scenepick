@@ -34,7 +34,7 @@ python tools/make_dummy.py
 
 ```
 DATA_ROOT=Z:\datasets\hyperspectral\cvpr_work
-RGB_ROOT=Z:\datasets\hyperspectral\cvpr_dataset\*gb_sat
+RGB_ROOT=Z:\datasets\hyperspectral\cvpr_dataset\*\rgb_sat
 SELECTION=Z:\datasets\hyperspectral\cvpr_work\scenepick\selection.json
 PORT=5101
 ```
