@@ -1,5 +1,7 @@
 """Reads .env. DATA_ROOT, and RGB_ROOT where it is set, are the absolute paths in the project."""
 
+import os
+import socket
 from pathlib import Path
 
 ROOT = Path(__file__).resolve().parent
@@ -72,3 +74,20 @@ def port():
     and their sessions share one network stack: two apps on 5000 and the second will not start.
     """
     return int(_read_env().get("PORT", "") or 5000)
+
+
+def refuse_taken_port():
+    """Stop if something already answers on PORT, before this app reads or writes anything.
+
+    On Windows a second server on a taken port starts without a word and never gets a
+    request: the browser keeps reaching the first one, so the second person works in
+    someone else's app. Several people share one remote-desktop machine, so say it instead.
+    The reloader's child is skipped: its parent holds the port already.
+    """
+    if os.environ.get("WERKZEUG_RUN_MAIN") == "true":
+        return
+    with socket.socket() as probe:
+        probe.settimeout(0.5)
+        if probe.connect_ex(("127.0.0.1", port())) == 0:
+            raise SystemExit(f"port {port()} is already in use on this machine: "
+                             "the selection runs one reviewer at a time, and someone is judging now")

@@ -5,6 +5,10 @@ from flask import Flask, abort, jsonify, render_template, request, send_file
 
 import settings
 
+# Before anything is read or written: a second copy on a taken port must not touch the files.
+if __name__ == "__main__":
+    settings.refuse_taken_port()
+
 DATA_ROOT = settings.data_root()
 THUMB = settings.ROOT / "cache" / "thumb"
 SELECTION = settings.selection_path()

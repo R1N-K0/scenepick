@@ -32,13 +32,13 @@ python tools/make_dummy.py
 DATA_ROOT=Z:/datasets/hyperspectral/cvpr_work
 RGB_ROOT=Z:/datasets/hyperspectral/cvpr_dataset/*/rgb_sat
 SELECTION=Z:/datasets/hyperspectral/cvpr_work/scenepick/selection.json
-PORT=5002
+PORT=5101
 ```
 
 - `Z:` は，ネットワークドライブの割り当てで NAS を割り当てたドライブ．自分の割り当てに合わせて書く
 - `RGB_ROOT` は画像（読むだけ）．各まとまりには同じ画像が `rgb/`・`rgb_sat/`・`rgb_view/` の3版あるので，`*/rgb_sat` で選定用の版（飽和したところが赤くなる）だけを読む．まとまりが増えても書き換えない
 - `DATA_ROOT` は `group.json` と `calibration.json`（本人が置く），`SELECTION` は判定を書く場所
-- `PORT` は，同じ Windows で他の人が使っていない番号にする（本人に聞く）．同じ番号だと2人目のアプリが立ち上がらない
+- `PORT` は選定担当2人とも **5101**．同じ番号なので，1人が立ち上げているあいだにもう1人が立ち上げようとすると「port 5101 is already in use」で止まる．選定は1人ずつ行うので，止まったら相手が作業中ということ（声をかける）．マスクを手伝う人の maskeditor は 5201 から，5000 は誰も使わない
 
 **まとまりごと**
 
@@ -52,7 +52,7 @@ PORT=5002
 - 起動時の1行 `group.json: N grouped, M ungrouped, ...` の `ungrouped` は，NAS に置かれたがまだ `group` されていない画像．
   **`ungrouped` の画像は判定しない．** 次の連絡のあと，シーンに分かれてから判定する
 - **NAS の `cvpr_dataset/` と `cvpr_work/` の中のファイルは，開いて書き換えたり，消したり，動かしたりしない．** 画像は RGB 化担当の，`cvpr_work/` は本人とアプリの置き場所
-- **scenepick は1か所でだけ動かす．** 2か所で同時に立ち上げると，同じ `selection.json` を両方が書き直し，片方の判定が消える
+- **scenepick は1か所でだけ動かす．** 2か所で同時に立ち上げると，同じ `selection.json` を両方が書き直し，片方の判定が消える（同じ Windows なら，上の 5101 で2つ目は止まる）
 - `cache/thumb/` はいつ消してもよい（作り直せる）
 
 ## 使い方
