@@ -1,0 +1,3 @@
+# cmd.exe misreads labels in a .bat with LF endings, and the ZIP download takes the
+# committed bytes as they are, so the .bat files are committed with CRLF.
+*.bat -text

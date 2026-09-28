@@ -26,26 +26,31 @@ python tools/make_dummy.py
 画像も `group.json` も判定も NAS に置き，リモートの Windows から scenepick を動かす．
 ファイルを手で置いたり，消したり，送ったりすることは無い．
 
-**`.env`（初回だけ）**
+**初回だけ**
+
+`setup_nas.bat` をダブルクリックする。Python の環境（`.venv/`）を作り，`.env` を書く．
+`.env` は，`cvpr_work` のある NAS のドライブを探して，次の形で書く（見つからなければ，エクスプローラーのアドレス欄からパスを貼ってもらう）．
+`.env` が既にあれば書き換えない．
 
 ```
-DATA_ROOT=Z:/datasets/hyperspectral/cvpr_work
-RGB_ROOT=Z:/datasets/hyperspectral/cvpr_dataset/*/rgb_sat
-SELECTION=Z:/datasets/hyperspectral/cvpr_work/scenepick/selection.json
+DATA_ROOT=Z:\datasets\hyperspectral\cvpr_work
+RGB_ROOT=Z:\datasets\hyperspectral\cvpr_dataset\*gb_sat
+SELECTION=Z:\datasets\hyperspectral\cvpr_work\scenepick\selection.json
 PORT=5101
 ```
 
-- `Z:` は，ネットワークドライブの割り当てで NAS を割り当てたドライブ．自分の割り当てに合わせて書く
 - `RGB_ROOT` は画像（読むだけ）．各まとまりには同じ画像が `rgb/`・`rgb_sat/`・`rgb_view/` の3版あるので，`*/rgb_sat` で選定用の版（飽和したところが赤くなる）だけを読む．まとまりが増えても書き換えない
 - `DATA_ROOT` は `group.json` と `calibration.json`（本人が置く），`SELECTION` は判定を書く場所
 - `PORT` は選定担当2人とも **5101**．同じ番号なので，1人が立ち上げているあいだにもう1人が立ち上げようとすると「port 5101 is already in use」で止まる．選定は1人ずつ行うので，止まったら相手が作業中ということ（声をかける）．マスクを手伝う人の maskeditor は 5201 から，5000 は誰も使わない
+- `.bat` は CRLF で commit してある（`.gitattributes`）．LF だと cmd がラベルを読み違える
 
 **まとまりごと**
 
 本人から「まとまり N の `group.json` ができた」と連絡が来たら：
 
-1. `python tools/make_thumbs.py`（新しい分のサムネイルだけ作る）
-2. `python app.py`（起動中なら止めてから）
+1. `start.bat` をダブルクリック．新しい分のサムネイルを作り，scenepick を立ち上げ，ブラウザで `http://localhost:5101` を開く．
+   止めるときは黒いウィンドウを閉じる（起動中なら閉じてからダブルクリックし直す）
+2. 黒いウィンドウに「port 5101 is already in use」と出たら，もう1人が作業中．閉じて声をかける
 3. 「unjudged only」で，今回の分を全部 keep か reject にする
 4. 終わったら本人に伝える．判定は `SELECTION` に保存されているので，送らなくてよい
 
