@@ -9,6 +9,7 @@
   <label><input type="checkbox" id="only"> unjudged only</label>
   {% include "controls.html" %}
 </header>
+<p id="ahead" hidden></p>
 <div id="grid"></div>
 
 <script src="/static/app.js"></script>
@@ -99,6 +100,28 @@ function draw(images) {
   grid.innerHTML = `${html}</div></section>`;
   for (const section of grid.children) tally(section);
 }
+
+// The shots are read ahead into memory from the start. Said here so the wait comes once, at
+// the start, instead of a little at every shot; starting before it is done is allowed.
+const ahead = document.getElementById("ahead");
+let waited = false;
+
+async function watchAhead() {
+  const a = await (await fetch("/api/ahead")).json();
+  if (a.have >= a.want) {
+    if (!waited) return;
+    ahead.textContent = "準備できました";
+    setTimeout(() => { ahead.hidden = true; }, 3000);
+    return;
+  }
+  waited = true;
+  ahead.hidden = false;
+  const left = a.seconds_left === null ? "" : `（あと約 ${a.seconds_left} 秒）`;
+  ahead.textContent = `先に読み込んでいます ${a.have} / ${a.want}${left}。待たずに始めることもできます`;
+  setTimeout(watchAhead, 1000);
+}
+
+watchAhead();
 
 fetch("/api/images").then(r => r.json()).then(images => {
   total = images.length;

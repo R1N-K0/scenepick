@@ -76,6 +76,15 @@ def port():
     return int(_read_env().get("PORT", "") or 5000)
 
 
+def prefetch():
+    """PREFETCH from .env: how many shots are read ahead into memory, else 90.
+
+    Each is held as an 8-bit PNG of about 4.5 MB, so 90 is about 0.4 GB. Several people share
+    one remote-desktop machine, so this is the one number to lower when its memory runs short.
+    """
+    return int(_read_env().get("PREFETCH", "") or 90)
+
+
 def refuse_taken_port():
     """Stop if something already answers on PORT, before this app reads or writes anything.
 

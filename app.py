@@ -1,7 +1,12 @@
+import io
 import json
 import os
+import threading
+import time
+from collections import deque
 
 from flask import Flask, abort, jsonify, render_template, request, send_file
+from PIL import Image
 
 import settings
 
@@ -113,6 +118,76 @@ def write_selection(selection):
     os.replace(tmp, SELECTION)
 
 
+# Shots read ahead of the reviewer and held in memory. On the NAS one picture takes longer to
+# read than to judge, so the next ones are read while the current one is looked at, and the
+# wait at the start (shown on the grid) buys a run with none.
+AHEAD = settings.prefetch()
+HELD = {}  # image_id -> (bytes, mimetype)
+RECENT = deque(maxlen=5)  # shots just seen, kept so stepping back to one is not a read again
+SPENT = []  # seconds each shot took to read and convert, for the estimate on the grid
+FAILED = set()
+CURSOR = 0  # where the reviewer is in ORDER
+WAKE = threading.Event()
+GUARD = threading.Lock()
+
+
+def upcoming():
+    """The next AHEAD shots to judge from where the reviewer is: unjudged, and in a scene.
+
+    Ungrouped shots are left out: they are not judged until they are in a scene (README).
+    """
+    selection = read_selection()
+    ids = []
+    for image_id in ORDER[CURSOR:]:
+        if selection.get(image_id, "unjudged") != "unjudged" or image_id in FAILED:
+            continue
+        if GROUPS and GROUPS[image_id] == UNGROUPED:
+            continue
+        ids.append(image_id)
+        if len(ids) == AHEAD:
+            break
+    return ids
+
+
+def eight_bit(path):
+    """The picture as the browser would show it, a third of the bytes of the 16-bit PNG.
+
+    A browser draws a 16-bit PNG at 8 bits anyway. Pillow opens one keeping the high byte of
+    each channel; level 1 takes a third of the default's time for under 10% more bytes.
+    Anything but a PNG is held as it is.
+    """
+    if path.suffix.lower() != ".png":
+        return path.read_bytes(), "image/jpeg"
+    buffer = io.BytesIO()
+    with Image.open(path) as picture:
+        picture.save(buffer, "PNG", compress_level=1)
+    return buffer.getvalue(), "image/png"
+
+
+def read_ahead():
+    """Runs for as long as the app does: fill up to what upcoming() names, drop the rest."""
+    while True:
+        WAKE.clear()  # before looking, so a step taken meanwhile is not missed
+        want = upcoming()
+        with GUARD:
+            for image_id in [i for i in HELD if i not in want and i not in RECENT]:
+                del HELD[image_id]
+            todo = next((i for i in want if i not in HELD), None)
+        if todo is None:
+            WAKE.wait()
+            continue
+        started = time.monotonic()
+        try:
+            kept = eight_bit(IMAGES[todo])
+        except OSError as problem:
+            print(f"not read ahead: {IMAGES[todo]}: {problem}", flush=True)
+            FAILED.add(todo)
+            continue
+        SPENT.append(time.monotonic() - started)
+        with GUARD:
+            HELD[todo] = kept
+
+
 def ensure_selection():
     selection = read_selection()
     if all(i in selection for i in IMAGES):
@@ -131,6 +206,10 @@ def home():
 def detail(image_id):
     if image_id not in IMAGES:
         abort(404)
+    global CURSOR
+    CURSOR = ORDER.index(image_id)
+    RECENT.append(image_id)
+    WAKE.set()
     # The whole order goes to the page, not just the two neighbours: with "unjudged only" on,
     # the neighbours are picked in the browser, which holds what that filter was set to.
     return render_template(
@@ -153,7 +232,22 @@ def serve(path):
 def rgb(image_id):
     if image_id not in IMAGES:
         abort(404)
+    with GUARD:
+        kept = HELD.get(image_id)
+    if kept:
+        return send_file(io.BytesIO(kept[0]), mimetype=kept[1], max_age=3600)
     return serve(IMAGES[image_id])
+
+
+@app.get("/api/ahead")
+def api_ahead():
+    """How far the reading ahead has got, for the grid to say how long to wait."""
+    want = upcoming()
+    with GUARD:
+        have = sum(1 for i in want if i in HELD)
+    last = SPENT[-10:]
+    left = round(sum(last) / len(last) * (len(want) - have)) if last else None
+    return jsonify({"have": have, "want": len(want), "seconds_left": left})
 
 
 @app.get("/thumb/<image_id>")
@@ -185,6 +279,7 @@ def api_status():
     selection = read_selection()
     selection[image_id] = status
     write_selection(selection)
+    WAKE.set()  # a judged shot leaves what is read ahead, and the next one comes in
     return jsonify({"image_id": image_id, "status": status})
 
 
@@ -197,4 +292,8 @@ print(
 )
 
 if __name__ == "__main__":
+    # The reloader runs this file twice, and only its child serves: reading ahead in the
+    # parent too would read every shot twice and hold it twice.
+    if os.environ.get("WERKZEUG_RUN_MAIN") == "true":
+        threading.Thread(target=read_ahead, daemon=True).start()
     app.run(debug=True, port=settings.port())
