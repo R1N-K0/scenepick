@@ -77,12 +77,13 @@ def port():
 
 
 def prefetch():
-    """PREFETCH from .env: how many shots are read ahead into memory, else 90.
+    """PREFETCH from .env: how many shots are read ahead into memory, else 300.
 
-    Each is held as an 8-bit PNG of about 4.5 MB, so 90 is about 0.4 GB. Several people share
-    one remote-desktop machine, so this is the one number to lower when its memory runs short.
+    Each is held as an 8-bit PNG of about 4.5 MB, so 300 is about 1.4 GB. Several people share
+    one remote-desktop machine (about 10 GB free), so this is the one number to lower when its
+    memory runs short.
     """
-    return int(_read_env().get("PREFETCH", "") or 90)
+    return int(_read_env().get("PREFETCH", "") or 300)
 
 
 def refuse_taken_port():
