@@ -54,9 +54,11 @@ function tally(section) {
     `${cells.length} shots   keep ${keep}   reject ${reject}`;
 }
 
-// Filtering only on toggle, never on judgment: a cell that vanished the instant
-// you clicked it could not be un-clicked.
-only.onchange = () => {
+// Filtering only on toggle (and on opening the grid), never on judgment: a cell that
+// vanished the instant you clicked it could not be un-clicked.
+function filter() {
+  const cells = [...grid.querySelectorAll(".cell")];
+  writeOnly(only.checked ? cells.filter(c => c.dataset.status === "unjudged").map(c => c.dataset.id) : null);
   for (const section of grid.children) {
     let shown = 0;
     for (const cell of section.querySelectorAll(".cell")) {
@@ -65,7 +67,9 @@ only.onchange = () => {
     }
     section.hidden = !shown;
   }
-};
+}
+
+only.onchange = filter;
 
 function cell(i) {
   return `<div class="cell" data-id="${i.image_id}" data-status="${i.status}">
@@ -101,5 +105,8 @@ fetch("/api/images").then(r => r.json()).then(images => {
   for (const i of images) n[i.status]++;
   draw(images);
   show();
+  // Left on from the last visit (here or on a shot), so it is set afresh to what is unjudged now.
+  only.checked = Boolean(readOnly());
+  if (only.checked) filter();
 });
 </script>

@@ -3,14 +3,15 @@
 <title>{{ image_id }}</title>
 <link rel="stylesheet" href="/static/style.css">
 <script>document.documentElement.dataset.theme = localStorage.theme || "dark";</script>
-{% if next %}<link rel="prefetch" href="/rgb/{{ next }}">{% endif %}
 
 <header id="bar" data-status="{{ status }}">
   <a href="/">&larr; all</a>
-  {% if prev %}<a class="step" href="/shot/{{ prev }}">&larr;</a>{% else %}<span class="step dim">&larr;</span>{% endif %}
-  {% if next %}<a class="step" href="/shot/{{ next }}">&rarr;</a>{% else %}<span class="step dim">&rarr;</span>{% endif %}
+  <a class="step" id="prev">&larr;</a>
+  <a class="step" id="next">&rarr;</a>
   <span>{{ image_id }}</span>
-  <span class="dim">{{ position }}</span>
+  {% if group %}<span>{{ group }}</span>{% endif %}
+  <span class="dim" id="position"></span>
+  <label><input type="checkbox" id="only"> unjudged only</label>
   <button data-set="keep">keep<span class="key">1</span></button>
   <button data-set="reject">reject<span class="key">0</span></button>
   <span id="pixel"></span>
@@ -22,14 +23,55 @@
 <script src="/static/app.js"></script>
 <script>
 const image_id = "{{ image_id }}";
-const prev = "{{ prev or '' }}";
-const next = "{{ next or '' }}";
+const order = {{ order | tojson }};
 const bar = document.getElementById("bar");
 const img = document.getElementById("img");
 const pixel = document.getElementById("pixel");
 const fit = document.getElementById("fit");
 
 mountHeader(image_id);
+
+const only = document.getElementById("only");
+let prev = "";
+let next = "";
+
+function link(a, to) {
+  if (to) a.href = `/shot/${to}`;
+  else a.removeAttribute("href");
+  a.classList.toggle("dim", !to);
+}
+
+// The neighbours in the whole order, or among what "unjudged only" holds. The shot on screen
+// stays in either way, so a shot opened from the menu still steps on from where it is.
+function steps() {
+  const held = readOnly();
+  only.checked = Boolean(held);
+  const ids = held ? order.filter(i => held.has(i) || i === image_id) : order;
+  const at = ids.indexOf(image_id);
+  prev = ids[at - 1] || "";
+  next = ids[at + 1] || "";
+  link(document.getElementById("prev"), prev);
+  link(document.getElementById("next"), next);
+  document.getElementById("position").textContent = `${at + 1} / ${ids.length}${held ? " unjudged" : ""}`;
+  if (next) {
+    const ahead = document.createElement("link");
+    ahead.rel = "prefetch";
+    ahead.href = `/rgb/${next}`;
+    document.head.append(ahead);
+  }
+}
+
+only.onchange = async () => {
+  if (only.checked) {
+    const images = await (await fetch("/api/images")).json();
+    writeOnly(images.filter(i => i.status === "unjudged").map(i => i.image_id));
+  } else {
+    writeOnly(null);
+  }
+  steps();
+};
+
+steps();
 
 // The pixels are read in the browser: the server never opens an image while serving.
 let canvas = null;

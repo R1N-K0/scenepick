@@ -131,15 +131,15 @@ def home():
 def detail(image_id):
     if image_id not in IMAGES:
         abort(404)
-    at = ORDER.index(image_id)
+    # The whole order goes to the page, not just the two neighbours: with "unjudged only" on,
+    # the neighbours are picked in the browser, which holds what that filter was set to.
     return render_template(
         "detail.html",
         image_id=image_id,
         status=read_selection().get(image_id, "unjudged"),
         box=BOXES.get(image_id),
-        prev=ORDER[at - 1] if at else None,
-        next=ORDER[at + 1] if at + 1 < len(ORDER) else None,
-        position=f"{at + 1} / {len(ORDER)}",
+        group=GROUPS[image_id] if GROUPS else None,
+        order=ORDER,
     )
 
 

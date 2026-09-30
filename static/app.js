@@ -8,6 +8,18 @@ async function setStatus(image_id, status) {
   return (await r.json()).status;
 }
 
+// "unjudged only" is the shots that were unjudged when it was switched on, kept in the browser
+// so the grid and the shot page step through the same ones. Held still while judging, as the
+// grid is: a shot judged a moment ago can still be stepped back to and un-clicked.
+function readOnly() {
+  return localStorage.only ? new Set(JSON.parse(localStorage.only)) : null;
+}
+
+function writeOnly(ids) {
+  if (ids) localStorage.only = JSON.stringify(ids);
+  else delete localStorage.only;
+}
+
 function mountHeader(current) {
   const root = document.documentElement;
   document.getElementById("theme").onclick = () => {
