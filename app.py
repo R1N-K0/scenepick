@@ -292,8 +292,9 @@ print(
 )
 
 if __name__ == "__main__":
-    # The reloader runs this file twice, and only its child serves: reading ahead in the
-    # parent too would read every shot twice and hold it twice.
-    if os.environ.get("WERKZEUG_RUN_MAIN") == "true":
-        threading.Thread(target=read_ahead, daemon=True).start()
-    app.run(debug=True, port=settings.port())
+    # No debug mode, so no reloader: it ran this file as two processes, and on the shared
+    # machine the parent could outlive a closed window and keep the port, locking the other
+    # reviewer out. The reviewers never edit the code, and the debugger runs whatever Python
+    # a browser sends it. One process now, gone with its window.
+    threading.Thread(target=read_ahead, daemon=True).start()
+    app.run(port=settings.port())
