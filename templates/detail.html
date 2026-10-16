@@ -10,11 +10,12 @@
   <a class="step" id="next">&rarr;</a>
   <span>{{ image_id }}</span>
   {% if group %}<span>{{ group }}</span>{% endif %}
-  <span class="dim" id="position"></span>
-  <label><input type="checkbox" id="only"> unjudged only</label>
+  {% if tally %}<span class="dim" id="tally">{{ tally.unjudged + tally.keep + tally.reject }} shots   keep {{ tally.keep }}   reject {{ tally.reject }}</span>{% endif %}
   <button data-set="keep">keep<span class="key">1</span></button>
   <button data-set="reject">reject<span class="key">0</span></button>
   <span id="pixel"></span>
+  <span class="dim" id="position"></span>
+  <label><input type="checkbox" id="only"> unjudged only</label>
   <button id="fit" aria-pressed="true" title="whole shot / native size">&#9974;</button>
   {% include "controls.html" %}
 </header>
@@ -122,9 +123,20 @@ img.onclick = pixelAt;
 img.ondblclick = toggleFit;
 fit.onclick = toggleFit;
 
+const tally = {{ tally | tojson }};
+
 async function judge(status) {
   const want = bar.dataset.status === status ? "unjudged" : status;
-  bar.dataset.status = await setStatus(image_id, want);
+  const got = await setStatus(image_id, want);
+  // The old status is read after the answer, not before the request: two presses in quick
+  // succession would otherwise both move the shot out of the same status and count it twice.
+  const was = bar.dataset.status;
+  bar.dataset.status = got;
+  if (!tally) return;
+  tally[was]--;
+  tally[got]++;
+  document.getElementById("tally").textContent =
+    `${tally.unjudged + tally.keep + tally.reject} shots   keep ${tally.keep}   reject ${tally.reject}`;
 }
 
 bar.onclick = (e) => {

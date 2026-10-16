@@ -210,14 +210,25 @@ def detail(image_id):
     CURSOR = ORDER.index(image_id)
     RECENT.append(image_id)
     WAKE.set()
+    selection = read_selection()
+    group = GROUPS[image_id] if GROUPS else None
+    # The scene's counts as the grid heads it, so the shot page says how far the scene has got
+    # without going back to the grid. The page keeps them right as it judges.
+    tally = None
+    if GROUPS:
+        tally = {"unjudged": 0, "keep": 0, "reject": 0}
+        for i, g in GROUPS.items():
+            if g == group:
+                tally[selection.get(i, "unjudged")] += 1
     # The whole order goes to the page, not just the two neighbours: with "unjudged only" on,
     # the neighbours are picked in the browser, which holds what that filter was set to.
     return render_template(
         "detail.html",
         image_id=image_id,
-        status=read_selection().get(image_id, "unjudged"),
+        status=selection.get(image_id, "unjudged"),
         box=BOXES.get(image_id),
-        group=GROUPS[image_id] if GROUPS else None,
+        group=group,
+        tally=tally,
         order=ORDER,
     )
 

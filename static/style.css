@@ -78,9 +78,10 @@ button {
 
 #fit[aria-pressed="true"] { background: var(--here); }
 
-/* The view controls sit together at the right, away from keep and reject. */
-#fit { margin-left: auto; }
-#fit ~ #theme { margin-left: 0; }
+/* Where the reviewer is and the view controls sit together at the right, away from keep and
+   reject. */
+#position { margin-left: auto; }
+#position ~ #theme { margin-left: 0; }
 
 #theme { margin-left: auto; }
 
