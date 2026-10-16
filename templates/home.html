@@ -102,11 +102,10 @@ function goTo(name) {
   }
 }
 
-// Up to the header's bottom as drawn, not the 45px the stylesheet assumes: the glyph buttons
-// set its height, and that follows the fonts of the machine (50px in Chrome on Windows).
-// A cell is short until it is drawn and its thumbnail arrives, so the page grows as the scroll
-// reaches it and one scroll can stop short of a late scene. Aligned again each frame, for up to
-// a second, until it holds still for two.
+// Up to the header's bottom, where the heading sticks (--bar, app.js), so the jump lands where
+// scrolling on would hold it. A cell is short until it is drawn and its thumbnail arrives, so
+// the page grows as the scroll reaches it and one scroll can stop short of a late scene.
+// Aligned again each frame, for up to a second, until it holds still for two.
 function bringUp(section, until = performance.now() + 1000, still = 0) {
   const off = Math.floor(section.getBoundingClientRect().top - header.getBoundingClientRect().bottom);
   if (off) scrollBy(0, off);

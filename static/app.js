@@ -22,6 +22,15 @@ function writeOnly(ids) {
 
 function mountHeader(current) {
   const root = document.documentElement;
+
+  // Measured, not written into the stylesheet: the glyph buttons set the header's height, which
+  // follows the fonts of the machine (50px in Chrome on Windows), and a narrow window wraps it
+  // onto two lines. What sits below the header is placed from --bar.
+  const header = document.querySelector("header");
+  new ResizeObserver(() => {
+    root.style.setProperty("--bar", `${header.getBoundingClientRect().height}px`);
+  }).observe(header);
+
   document.getElementById("theme").onclick = () => {
     root.dataset.theme = localStorage.theme = root.dataset.theme === "light" ? "dark" : "light";
   };

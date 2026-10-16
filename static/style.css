@@ -85,9 +85,11 @@ button {
 
 #theme { margin-left: auto; }
 
+/* --bar is the header's height as drawn, set by mountHeader() in app.js. The 45px stands in only
+   until it is measured. */
 #menu {
   position: fixed;
-  top: 45px;
+  top: var(--bar, 45px);
   right: 0;
   bottom: 0;
   z-index: 20;
@@ -141,7 +143,7 @@ button {
    by the time the next one starts. */
 .group {
   position: sticky;
-  top: 45px;
+  top: var(--bar, 45px);
   z-index: 5;
   margin: 14px 0 8px;
   padding: 6px 2px;
@@ -201,13 +203,13 @@ button {
 #view {
   position: relative;
   overflow: auto;
-  height: calc(100vh - 45px);
+  height: calc(100vh - var(--bar, 45px));
   padding: 3px;
   background: var(--void);
 }
 
 #view img { display: block; }
-#view img.fit { max-width: 100%; max-height: calc(100vh - 45px - 6px); margin: auto; }
+#view img.fit { max-width: 100%; max-height: calc(100vh - var(--bar, 45px) - 6px); margin: auto; }
 
 /* Outside the image, so no edge pixel is covered and the calibration box stays inside it. */
 #bar[data-status="keep"] ~ #view img { outline: 3px solid var(--keep); }
