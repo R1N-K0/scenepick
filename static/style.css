@@ -156,6 +156,20 @@ button {
   color: var(--dim);
 }
 
+/* Padded and bordered as the buttons are, so it sits level with them and the header does not
+   grow. */
+#jump-to {
+  width: 70px;
+  padding: 3px 6px;
+  font: inherit;
+  color: var(--text);
+  background: var(--btn);
+  border: 1px solid var(--btn-line);
+  border-radius: 3px;
+}
+
+#jump-said { margin-left: 8px; }
+
 .cell {
   padding: 4px;
   border: 2px solid var(--frame);

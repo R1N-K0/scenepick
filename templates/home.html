@@ -7,6 +7,8 @@
 <header>
   <span id="counts"></span>
   <label><input type="checkbox" id="only"> unjudged only</label>
+  <span id="jump" hidden><input id="jump-to" inputmode="numeric" placeholder="scene" autocomplete="off">
+    <span id="jump-said" class="dim"></span></span>
   {% include "controls.html" %}
 </header>
 <p id="ahead" hidden></p>
@@ -72,6 +74,46 @@ function filter() {
 
 only.onchange = filter;
 
+const header = document.querySelector("header");
+const jump = document.getElementById("jump");
+const jumpTo = document.getElementById("jump-to");
+const jumpSaid = document.getElementById("jump-said");
+
+jumpTo.oninput = () => { jumpSaid.textContent = ""; };
+
+// Kept from the page's own keys: a digit typed here is a scene number, never a shortcut.
+jumpTo.onkeydown = (e) => {
+  e.stopPropagation();
+  if (e.key !== "Enter") return;
+  const name = jumpTo.value.trim();
+  if (name) goTo(name);
+};
+
+// The scene goes into the address too, replaced rather than added, so a reload comes back to it
+// and Back still leaves the grid in one step.
+function goTo(name) {
+  const section = [...grid.children].find(s => s.dataset.group === `scene ${name}`);
+  if (!section) jumpSaid.textContent = `no scene ${name}`;
+  // Said rather than jumped past: landing on the next scene would read as this one.
+  else if (section.hidden) jumpSaid.textContent = `scene ${name}: no unjudged shots`;
+  else {
+    history.replaceState(null, "", `#scene=${encodeURIComponent(name)}`);
+    bringUp(section);
+  }
+}
+
+// Up to the header's bottom as drawn, not the 45px the stylesheet assumes: the glyph buttons
+// set its height, and that follows the fonts of the machine (50px in Chrome on Windows).
+// A cell is short until it is drawn and its thumbnail arrives, so the page grows as the scroll
+// reaches it and one scroll can stop short of a late scene. Aligned again each frame, for up to
+// a second, until it holds still for two.
+function bringUp(section, until = performance.now() + 1000, still = 0) {
+  const off = Math.floor(section.getBoundingClientRect().top - header.getBoundingClientRect().bottom);
+  if (off) scrollBy(0, off);
+  still = off ? 0 : still + 1;
+  if (still < 2 && performance.now() < until) requestAnimationFrame(() => bringUp(section, until, still));
+}
+
 function cell(i) {
   return `<div class="cell" data-id="${i.image_id}" data-status="${i.status}">
     <a href="/shot/${i.image_id}"><img loading="lazy" src="/thumb/${i.image_id}" alt=""></a>
@@ -91,7 +133,7 @@ function draw(images) {
   for (const i of images) {
     if (i.group !== open) {
       html += `${open === null ? "" : "</div></section>"}
-        <section><h2 class="group">${i.group}<span class="tally"></span></h2>
+        <section data-group="${i.group}"><h2 class="group">${i.group}<span class="tally"></span></h2>
         <div class="cells">`;
       open = i.group;
     }
@@ -99,6 +141,7 @@ function draw(images) {
   }
   grid.innerHTML = `${html}</div></section>`;
   for (const section of grid.children) tally(section);
+  jump.hidden = false;
 }
 
 // The shots are read ahead into memory from the start. Said here so the wait comes once, at
@@ -131,5 +174,9 @@ fetch("/api/images").then(r => r.json()).then(images => {
   // Left on from the last visit (here or on a shot), so it is set afresh to what is unjudged now.
   only.checked = Boolean(readOnly());
   if (only.checked) filter();
+  // A shot's "← all" names its scene. Not on Back or Forward: those stay the browser's, as they
+  // were before the address carried a scene.
+  const scene = new URLSearchParams(location.hash.slice(1)).get("scene");
+  if (scene && performance.getEntriesByType("navigation")[0]?.type !== "back_forward") goTo(scene);
 });
 </script>

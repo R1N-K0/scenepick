@@ -5,7 +5,7 @@
 <script>document.documentElement.dataset.theme = localStorage.theme || "dark";</script>
 
 <header id="bar" data-status="{{ status }}">
-  <a href="/">&larr; all</a>
+  <a href="/{% if group and group.startswith('scene ') %}#scene={{ group[6:] | urlencode }}{% endif %}">&larr; all</a>
   <a class="step" id="prev">&larr;</a>
   <a class="step" id="next">&rarr;</a>
   <span>{{ image_id }}</span>
